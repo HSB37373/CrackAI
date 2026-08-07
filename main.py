@@ -66,10 +66,6 @@ class RespondRequest(BaseModel):
     use_ai: bool = False
 
 
-class ActivateAIRequest(BaseModel):
-    session_id: str
-    risk_score: int
-
 
 @app.post("/analyze")
 async def analyze(req: AnalyzeRequest):

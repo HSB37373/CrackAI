@@ -47,7 +47,7 @@ def analyze(text: str, history: list[str]) -> dict:
         anger_score += 18
     anger_score = min(100, anger_score)
 
-    # ④ 반복 발화 점수
+    # ④ 반복 발화 점수 — 이전 발화와의 유사도
     recent = history[-6:] if history else []
     repeat_count = sum(1 for h in recent if _is_similar(h, text))
     repetition_score = min(100, repeat_count * 22)
