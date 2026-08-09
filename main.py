@@ -21,6 +21,7 @@ from pydantic import BaseModel
 import toxicity_detector as td
 import complaint_classifier as cc
 import response_generator as rg
+import caller_registry as cr
 
 app = FastAPI(title="민원 AI 보호 시스템")
 
@@ -39,13 +40,19 @@ def get_session(session_id: str) -> dict:
     if session_id not in sessions:
         sessions[session_id] = {
             "id": session_id,
-            "history": [],           # 발화 텍스트 목록
-            "logs": [],              # 분석 로그
+            "history": [],
+            "logs": [],
             "ai_activated": False,
             "ai_activation_score": None,
             "started_at": datetime.now().isoformat(),
             "profanity_total": 0,
             "threat_total": 0,
+            "caller_name": "",
+            "caller_phone": "",
+            "caller_offense_count": 0,
+            "profanity_warning_count": 0,
+            "ai_threshold": 3,
+            "offense_recorded": False,
         }
     return sessions[session_id]
 
@@ -66,6 +73,12 @@ class RespondRequest(BaseModel):
     use_ai: bool = False
 
 
+class CallerRegisterRequest(BaseModel):
+    session_id: str
+    name: str
+    phone: str
+
+
 
 @app.post("/analyze")
 async def analyze(req: AnalyzeRequest):
@@ -80,6 +93,7 @@ async def analyze(req: AnalyzeRequest):
     history.append(req.text)
     if analysis["matched_bad_words"]:
         session["profanity_total"] += 1
+        session["profanity_warning_count"] += 1
     if analysis["matched_threats"]:
         session["threat_total"] += 1
 
@@ -91,10 +105,25 @@ async def analyze(req: AnalyzeRequest):
         "timestamp": datetime.now().isoformat(),
     })
 
-    # 위험도 60점 이상이고 아직 AI 전환 안 됐으면 자동 전환
-    if analysis["risk_score"] >= 30 and not session["ai_activated"]:
+    # AI 전환 조건 — 욕설 경고 횟수 기반
+    threshold = session["ai_threshold"]
+    warning_count = session["profanity_warning_count"]
+
+    should_activate = False
+    if threshold == 0 and analysis["matched_bad_words"]:
+        should_activate = True  # 즉시 전환 (3회 이상 전과)
+    elif threshold > 0 and warning_count >= threshold:
+        should_activate = True
+
+    if should_activate and not session["ai_activated"]:
         session["ai_activated"] = True
         session["ai_activation_score"] = analysis["risk_score"]
+        phone = session.get("caller_phone", "")
+        if phone and not session["offense_recorded"]:
+            cr.record_offense(phone, session["caller_name"], req.session_id, analysis["risk_score"])
+            session["offense_recorded"] = True
+
+    warnings_remaining = max(0, threshold - warning_count) if threshold > 0 else 0
 
     return {
         **analysis,
@@ -105,6 +134,50 @@ async def analyze(req: AnalyzeRequest):
         "threat_total": session["threat_total"],
         "ai_activated": session["ai_activated"],
         "warning_message": td.WARNING_MESSAGES.get(analysis["level"]),
+        "profanity_warning_count": warning_count,
+        "ai_threshold": threshold,
+        "warnings_remaining": warnings_remaining,
+        "caller_offense_count": session["caller_offense_count"],
+    }
+
+
+@app.post("/caller/register")
+async def register_caller(req: CallerRegisterRequest):
+    session = get_session(req.session_id)
+    session["caller_name"] = req.name
+    session["caller_phone"] = req.phone
+
+    recent_count = cr.get_recent_offense_count(req.phone)
+    threshold = cr.get_threshold(req.phone)
+
+    session["ai_threshold"] = threshold
+    session["caller_offense_count"] = recent_count
+
+    caller = cr.get_caller(req.phone)
+    return {
+        "name": req.name,
+        "phone": req.phone,
+        "offense_count": recent_count,
+        "ai_threshold": threshold,
+        "ban_status": cr.get_ban_status(req.phone),
+        "history": caller.get("history", []) if caller else [],
+    }
+
+
+@app.get("/caller/{phone}")
+async def get_caller_info(phone: str):
+    caller = cr.get_caller(phone)
+    if not caller:
+        return {"found": False, "offense_count": 0, "ai_threshold": 3, "history": []}
+    return {
+        "found": True,
+        "name": caller["name"],
+        "phone": caller["phone"],
+        "offense_count": cr.get_recent_offense_count(phone),
+        "ai_threshold": cr.get_threshold(phone),
+        "ban_status": cr.get_ban_status(phone),
+        "last_offense": caller.get("last_offense"),
+        "history": caller.get("history", []),
     }
 
 

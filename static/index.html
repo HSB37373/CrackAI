@@ -164,6 +164,22 @@
         <h2>담당자 보호 대시보드</h2>
       </div>
 
+      <!-- 민원인 정보 조회 -->
+      <div class="caller-lookup">
+        <div class="caller-lookup-title">민원인 정보 조회</div>
+        <div class="caller-lookup-inputs">
+          <input type="text" id="caller-name-input" placeholder="이름" />
+          <input type="text" id="caller-phone-input" placeholder="전화번호" />
+          <button id="register-caller-btn">조회</button>
+        </div>
+        <div class="penalty-badge hidden" id="penalty-badge"></div>
+        <div class="ban-status hidden" id="ban-status">
+          <div class="ban-label">🚫 상담원 통화 제한 중</div>
+          <div class="ban-timer" id="ban-timer">00:00:00</div>
+          <div class="ban-sub">AI 챗봇 · 음성 상담만 가능</div>
+        </div>
+      </div>
+
       <!-- 현재 상태 요약 -->
       <div class="status-summary">
         <div class="summary-row">
@@ -173,6 +189,10 @@
         <div class="summary-row">
           <span class="summary-key">악성 표현 누적</span>
           <span class="summary-val" id="db-toxic">0회</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">욕설 경고 현황</span>
+          <span class="summary-val" id="db-warnings">-</span>
         </div>
         <div class="summary-row">
           <span class="summary-key">AI 전환 상태</span>
