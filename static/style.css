@@ -518,4 +518,87 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* ── 민원인 조회 ── */
+.caller-lookup {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.caller-lookup-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.caller-lookup-inputs { display: flex; gap: 6px; }
+.caller-lookup-inputs input {
+  flex: 1;
+  padding: 7px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+  transition: var(--trans);
+}
+.caller-lookup-inputs input:focus { border-color: var(--ai); }
+.caller-lookup-inputs button {
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--ai);
+  border-radius: 6px;
+  color: var(--ai);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--trans);
+}
+.caller-lookup-inputs button:hover { background: rgba(88,166,255,0.1); }
+
+.penalty-badge {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+}
+.penalty-badge.clean    { background: rgba(63,185,80,0.1);   border: 1px solid var(--normal);   color: var(--normal); }
+.penalty-badge.warn1    { background: rgba(210,153,34,0.1);  border: 1px solid var(--caution);  color: var(--caution); }
+.penalty-badge.warn2    { background: rgba(248,81,73,0.1);   border: 1px solid var(--danger);   color: var(--danger); }
+.penalty-badge.ban      { background: rgba(255,123,114,0.15);border: 1px solid var(--critical); color: var(--critical); animation: pulse 1.2s infinite; }
+
+.ban-status {
+  background: rgba(255, 123, 114, 0.12);
+  border: 1px solid var(--critical);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  animation: pulse 1.5s infinite;
+}
+.ban-label { font-size: 12px; font-weight: 700; color: var(--critical); }
+.ban-timer {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--critical);
+  margin: 6px 0 4px;
+  font-variant-numeric: tabular-nums;
+}
+.ban-sub { font-size: 11px; color: var(--text-muted); }
+.ban-status.lifted {
+  background: rgba(63,185,80,0.1);
+  border-color: var(--normal);
+  animation: none;
+}
+.ban-status.lifted .ban-label,
+.ban-status.lifted .ban-timer { color: var(--normal); }
+
 .hidden { display: none !important; }

@@ -18,6 +18,13 @@ let lastComplaintType = '-';
 let lastDept = '-';
 let logEntries = [];
 
+// 악성민원 이력 관련
+let callerPhone = '';
+let callerName = '';
+let callerOffenseCount = 0;
+let aiThreshold = 3;
+let banTimerInterval = null;
+
 // ── DOM 참조 ──────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
@@ -42,6 +49,8 @@ function init() {
   textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
   summaryBtn.addEventListener('click', generateSummary);
   $('demo-btn').addEventListener('click', runDemo);
+  $('register-caller-btn').addEventListener('click', registerCaller);
+  $('caller-phone-input').addEventListener('keydown', e => { if (e.key === 'Enter') registerCaller(); });
 
   initSpeechRecognition();
 }
@@ -78,6 +87,91 @@ function initSpeechRecognition() {
       try { recognition.start(); } catch {}
     }
   };
+}
+
+// ── 민원인 조회 ───────────────────────────────────────────────────────────
+async function registerCaller() {
+  const name  = $('caller-name-input').value.trim();
+  const phone = $('caller-phone-input').value.trim();
+  if (!phone) return;
+
+  const badge = $('penalty-badge');
+
+  try {
+    const res = await fetch(`${API}/caller/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: SESSION_ID, name, phone }),
+    });
+    const data = await res.json();
+
+    callerName        = data.name;
+    callerPhone       = data.phone;
+    callerOffenseCount= data.offense_count;
+    aiThreshold       = data.ai_threshold;
+
+    badge.classList.remove('hidden', 'clean', 'warn1', 'warn2', 'ban');
+
+    const count = data.offense_count;
+    if (count === 0) {
+      badge.className = 'penalty-badge clean';
+      badge.textContent = '신규 민원인 · 경고 3회 허용';
+    } else if (count === 1) {
+      badge.className = 'penalty-badge warn1';
+      badge.textContent = `⚠️ 악성민원 이력 ${count}회 · 경고 2회 허용`;
+    } else if (count === 2) {
+      badge.className = 'penalty-badge warn2';
+      badge.textContent = `🔴 악성민원 이력 ${count}회 · 경고 1회 허용`;
+    } else {
+      badge.className = 'penalty-badge ban';
+      badge.textContent = `🚨 악성민원 이력 ${count}회 이상 · 욕설 즉시 AI 전환`;
+    }
+
+    // 통화 제한 상태 표시
+    if (data.ban_status && data.ban_status.is_banned) {
+      startBanCountdown(data.ban_status.remaining_seconds);
+    } else {
+      clearBanStatus();
+    }
+  } catch {
+    badge.className = 'penalty-badge warn1';
+    badge.classList.remove('hidden');
+    badge.textContent = '⚠️ 서버 조회 실패 — 기본 경고 3회 적용';
+  }
+}
+
+function startBanCountdown(remainingSeconds) {
+  clearInterval(banTimerInterval);
+  const banEl  = $('ban-status');
+  const timerEl = $('ban-timer');
+  banEl.classList.remove('hidden', 'lifted');
+
+  function tick() {
+    if (remainingSeconds <= 0) {
+      clearInterval(banTimerInterval);
+      banEl.classList.add('lifted');
+      $('ban-label').textContent = '✅ 통화 제한 해제됨';
+      timerEl.textContent = '00:00:00';
+      $('ban-sub').textContent = '상담원 통화 재개 가능';
+      return;
+    }
+    const h = Math.floor(remainingSeconds / 3600);
+    const m = Math.floor((remainingSeconds % 3600) / 60);
+    const s = remainingSeconds % 60;
+    timerEl.textContent =
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    remainingSeconds--;
+  }
+  tick();
+  banTimerInterval = setInterval(tick, 1000);
+}
+
+function clearBanStatus() {
+  clearInterval(banTimerInterval);
+  $('ban-status').classList.add('hidden');
+  $('ban-status').classList.remove('lifted');
+  $('ban-label').textContent = '🚫 상담원 통화 제한 중';
+  $('ban-sub').textContent = 'AI 챗봇 · 음성 상담만 가능';
 }
 
 // ── 통화 제어 ─────────────────────────────────────────────────────────────
@@ -163,11 +257,13 @@ async function processUtterance(text) {
   lastDept = analysis.department || '-';
 
   // AI 전환 여부 결정
-  if (!aiModeActive && analysis.risk_score >= 30) {
+  if (!aiModeActive && analysis.ai_activated) {
     await activateAI(analysis.risk_score);
-  } else if (analysis.risk_score >= 30 && analysis.warning_message) {
-    // 주의 단계 안내
-    showWarning(analysis.warning_message, analysis.level);
+  } else if (!aiModeActive) {
+    updateWarningCounter(analysis);
+    if (analysis.warning_message && analysis.level !== 'normal') {
+      showWarning(analysis.warning_message, analysis.level);
+    }
   }
 
   // AI 모드이면 응답 생성
@@ -275,6 +371,29 @@ function updateAnalysisPanel(a) {
 
   // 상태 배지 (왼쪽 패널)
   showBadge(aiModeActive ? 'ai' : level);
+}
+
+function updateWarningCounter(a) {
+  const warnEl = $('db-warnings');
+  if (!warnEl) return;
+  const count  = a.profanity_warning_count || 0;
+  const thresh = a.ai_threshold ?? aiThreshold;
+
+  if (thresh === 0) {
+    warnEl.textContent = '즉시 전환 적용 중';
+    warnEl.style.color = 'var(--critical)';
+  } else if (count === 0) {
+    warnEl.textContent = `-`;
+    warnEl.style.color = '';
+  } else {
+    const remaining = Math.max(0, thresh - count);
+    warnEl.textContent = `${count}/${thresh}회 (${remaining}회 남음)`;
+    warnEl.style.color = remaining === 0 ? 'var(--danger)' : remaining === 1 ? 'var(--caution)' : '';
+
+    if (count > 0 && remaining > 0) {
+      addChatMsg('ai', '⚠️ 시스템', `욕설 경고 ${count}/${thresh} — 경고 ${remaining}회 남았습니다. 다음 욕설 시 AI 상담으로 전환됩니다.`, '');
+    }
+  }
 }
 
 function updateDashboard(a) {
@@ -482,6 +601,8 @@ function clearChatArea() {
 function resetStats() {
   profanityTotal = 0; threatTotal = 0; turnTotal = 0; lastLevel = 'normal';
   aiModeActive = false; logEntries = [];
+  const warnEl = $('db-warnings');
+  if (warnEl) { warnEl.textContent = '-'; warnEl.style.color = ''; }
   ['cnt-profanity','cnt-threat','cnt-turns','cnt-repeat'].forEach(id => { $(id).textContent = '0'; });
   ['profanity','threat','anger','repetition'].forEach(n => { setBar(n, 0); });
   $('gauge-fill').style.width = '0%';
