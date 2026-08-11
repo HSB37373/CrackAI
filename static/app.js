@@ -257,7 +257,8 @@ async function processUtterance(text) {
   lastDept = analysis.department || '-';
 
   // AI 전환 여부 결정
-  if (!aiModeActive && analysis.ai_activated) {
+  const justActivated = !aiModeActive && analysis.ai_activated;
+  if (justActivated) {
     await activateAI(analysis.risk_score);
   } else if (!aiModeActive) {
     updateWarningCounter(analysis);
@@ -266,8 +267,8 @@ async function processUtterance(text) {
     }
   }
 
-  // AI 모드이면 응답 생성
-  if (aiModeActive || analysis.ai_activated) {
+  // AI 모드이면 응답 생성 (전환된 바로 그 순간은 제외)
+  if (!justActivated && (aiModeActive || analysis.ai_activated)) {
     await generateAIResponse(text, lastComplaintType);
   }
 }
@@ -276,12 +277,14 @@ async function processUtterance(text) {
 async function activateAI(score) {
   aiModeActive = true;
 
-  let msg;
-  if (score >= 80) {
-    msg = '심각한 폭언이 감지되었습니다. 담당자 보호를 위해 AI 음성 상담으로 즉시 전환합니다. 민원 내용은 계속 처리됩니다.';
-  } else {
-    msg = '폭언이 감지되었습니다. 담당자 보호를 위해 AI 음성 상담으로 전환합니다. 민원 내용은 계속 처리됩니다.';
-  }
+  const newCount = callerOffenseCount + 1;
+  const banHours = newCount >= 3 ? 24 : newCount === 2 ? 3 : 1;
+
+  const systemMsg = score >= 80
+    ? `⚠️ 심각한 폭언이 감지되어 AI 음성 상담으로 즉시 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→3시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`
+    : `⚠️ 폭언이 감지되어 AI 음성 상담으로 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→3시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`;
+
+  const aiGreeting = '안녕하세요. AI 상담원입니다. 원하시는 민원 내용을 말씀해 주세요';
 
   showBadge('ai');
   setCallStatus('AI 상담 전환', 'ai');
@@ -289,8 +292,10 @@ async function activateAI(score) {
   callIndicator.classList.add('ai-mode');
   updateSystemBadge('ai-dot', 'AI 상담 전환 중');
 
-  addChatMsg('ai', '🤖 시스템', msg, '');
-  speak(msg);
+  addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
+  await sleep(800);
+  addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
+  speak(aiGreeting);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
@@ -703,9 +708,9 @@ function fallbackResponse(type) {
     불법주정차: '불법주정차 과태료 이의신청은 고지서 수령일로부터 60일 이내에 교통행정과에 접수하실 수 있습니다. 이의신청서와 증빙자료가 필요합니다.',
     주민등록:   '주민등록등본은 정부24 홈페이지 또는 주민센터에서 발급받으실 수 있습니다. 온라인 발급 시 수수료는 무료입니다.',
     여권:       '여권 발급은 가까운 주민센터 민원여권과를 방문하시거나 온라인으로 신청하실 수 있습니다. 여권용 사진과 신분증이 필요합니다.',
-    쓰레기:     '쓰레기 무단투기는 120 다산콜센터 또는 구청 환경위생과에 신고하실 수 있습니다.',
+    쓰레기:     '쓰레기 무단투기는 화성시 콜센터(1577-4200) 또는 화성시청 환경위생과에 신고하실 수 있습니다.',
     소음:       '층간소음 민원은 층간소음이웃사이센터(1661-2642) 또는 구청 환경위생과에 접수하실 수 있습니다.',
-    기타:       '문의하신 내용은 담당 부서로 안내드리겠습니다. 주민센터 방문 또는 120 다산콜센터로 문의해 주시기 바랍니다.',
+    기타:       '문의하신 내용은 담당 부서로 안내드리겠습니다. 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 문의해 주시기 바랍니다.',
   };
   return RESPONSES[type] || RESPONSES['기타'];
 }
