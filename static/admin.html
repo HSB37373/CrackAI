@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 — 민원 AI 보호 시스템</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Pretendard', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 32px; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; color: #f8fafc; }
+    .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #94a3b8; margin-bottom: 16px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 0.9rem; color: #cbd5e1; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+    .badge.ok { background: #064e3b; color: #6ee7b7; }
+    .badge.warn { background: #78350f; color: #fde68a; }
+    .badge.err { background: #7f1d1d; color: #fca5a5; }
+    button { width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-blue  { background: #2563eb; color: #fff; }
+    .btn-green { background: #059669; color: #fff; }
+    .btn-gray  { background: #334155; color: #e2e8f0; }
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    pre { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-size: 0.8rem; color: #a3e635; overflow-x: auto; max-height: 220px; overflow-y: auto; margin-top: 12px; white-space: pre-wrap; word-break: break-all; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { text-align: left; font-size: 0.75rem; color: #64748b; padding: 6px 8px; border-bottom: 1px solid #334155; }
+    td { font-size: 0.85rem; padding: 8px; border-bottom: 1px solid #1e293b; }
+    td:last-child { text-align: right; }
+    .loading { color: #64748b; font-size: 0.85rem; }
+    .section-title { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin: 28px 0 14px; }
+  </style>
+</head>
+<body>
+  <h1>관리자 대시보드</h1>
+  <p class="sub">서울 열린데이터광장 API 연동 현황 · civil_service_faq.json 관리</p>
+
+  <div class="grid">
+    <!-- FAQ 통계 카드 -->
+    <div class="card">
+      <h2>FAQ 데이터 현황</h2>
+      <div id="faq-stats"><p class="loading">불러오는 중...</p></div>
+      <button class="btn-gray" onclick="loadStats()">새로고침</button>
+    </div>
+
+    <!-- API 수집 카드 -->
+    <div class="card">
+      <h2>API 데이터 수집 · FAQ 자동 생성</h2>
+      <div class="stat-row">
+        <span class="stat-label">데이터 출처</span>
+        <span class="badge ok">서울 열린데이터광장 SearchFAQService</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">총 수집 가능</span>
+        <span class="stat-value">109건</span>
+      </div>
+      <button class="btn-blue" id="btn-fetch" onclick="runFetch()" style="margin-top:10px;">
+        ① API 수집 + FAQ 자동 생성 (원클릭)
+      </button>
+      <button class="btn-gray" id="btn-reload" onclick="runReload()">② 서버 재로드</button>
+      <pre id="log-output" style="display:none"></pre>
+    </div>
+  </div>
+
+  <p class="section-title">민원 유형별 FAQ 상세</p>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>유형</th>
+          <th>민원명</th>
+          <th>담당부서</th>
+          <th>FAQ 수</th>
+          <th>안내문</th>
+        </tr>
+      </thead>
+      <tbody id="faq-table"><tr><td colspan="5" class="loading">불러오는 중...</td></tr></tbody>
+    </table>
+  </div>
+
+  <p class="section-title">원본 API 데이터 미리보기</p>
+  <div class="card">
+    <button class="btn-gray" onclick="loadRaw()">원본 데이터 보기 (최대 20건)</button>
+    <pre id="raw-preview" style="display:none"></pre>
+  </div>
+
+<script>
+const log = (msg, ok) => {
+  const el = document.getElementById('log-output');
+  el.style.display = 'block';
+  el.textContent += (ok === false ? '❌ ' : ok === true ? '✅ ' : '') + msg + '\n';
+};
+
+async function loadStats() {
+  const res = await fetch('/admin/faq-stats').then(r => r.json());
+
+  // 요약 카드
+  document.getElementById('faq-stats').innerHTML = `
+    <div class="stat-row"><span class="stat-label">전체 FAQ 항목 수</span><span class="stat-value">${res.total_faq}개</span></div>
+    <div class="stat-row"><span class="stat-label">원본 API 데이터</span>
+      <span class="badge ${res.raw_api_exists ? 'ok' : 'err'}">${res.raw_api_exists ? res.raw_api_total + '건' : '없음'}</span>
+    </div>
+  `;
+
+  document.getElementById('raw-count').textContent = res.raw_api_exists ? res.raw_api_total + '건' : '없음';
+
+  // 테이블
+  const tbody = document.getElementById('faq-table');
+  tbody.innerHTML = res.stats.map(s => `
+    <tr>
+      <td>${s.category}</td>
+      <td>${s.민원명}</td>
+      <td>${s.담당부서}</td>
+      <td><span class="badge ${s.faq_count > 0 ? 'ok' : 'warn'}">${s.faq_count}개</span></td>
+      <td><span class="badge ${s.has_안내 ? 'ok' : 'warn'}">${s.has_안내 ? '있음' : '없음'}</span></td>
+    </tr>
+  `).join('');
+}
+
+async function runFetch() {
+  const btn = document.getElementById('btn-fetch');
+  btn.disabled = true; btn.textContent = '수집 중...';
+  document.getElementById('log-output').textContent = '';
+  log('서울 열린데이터광장 FAQ 수집 + 자동 생성 시작...');
+  const res = await fetch('/admin/fetch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  }).then(r => r.json());
+  log(res.stdout || '(출력 없음)', res.ok);
+  if (res.stderr) log('STDERR: ' + res.stderr, false);
+  btn.disabled = false; btn.textContent = '① API 수집 + FAQ 자동 생성 (원클릭)';
+  loadStats();
+}
+
+async function runGenerate() {
+  const btn = document.getElementById('btn-gen');
+  btn.disabled = true; btn.textContent = '변환 중...';
+  log('FAQ 변환 시작...');
+  const res = await fetch('/admin/generate', { method: 'POST' }).then(r => r.json());
+  log(res.stdout || '(출력 없음)', res.ok);
+  if (res.stderr) log('STDERR: ' + res.stderr, false);
+  btn.disabled = false; btn.textContent = '② FAQ 변환 실행';
+  loadStats();
+}
+
+async function runReload() {
+  log('서버 FAQ 재로드...');
+  await fetch('/admin/reload', { method: 'POST' });
+  log('재로드 완료', true);
+  loadStats();
+}
+
+async function loadRaw() {
+  const res = await fetch('/admin/raw').then(r => r.json());
+  const el = document.getElementById('raw-preview');
+  el.style.display = 'block';
+  el.textContent = JSON.stringify(res, null, 2);
+}
+
+loadStats();
+</script>
+</body>
+</html>

@@ -329,10 +329,24 @@ async function generateAIResponse(question, complaintType) {
 function speak(text) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
+
+  // TTS 재생 중 STT 중단 → 피드백 루프 방지
+  if (recognition && isCallActive) {
+    try { recognition.stop(); } catch {}
+  }
+
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'ko-KR';
-  utt.rate = 0.92;
+  utt.lang  = 'ko-KR';
+  utt.rate  = 0.92;
   utt.pitch = 1.05;
+
+  // TTS 끝나면 STT 재개
+  utt.onend = () => {
+    if (isCallActive && recognition) {
+      try { recognition.start(); } catch {}
+    }
+  };
+
   speechSynthesis.speak(utt);
 }
 

@@ -4,6 +4,7 @@
 실행: uvicorn main:app --reload --port 8000
 """
 
+import json
 import sys
 import uuid
 from datetime import datetime
@@ -250,6 +251,57 @@ async def get_faq():
     from pathlib import Path as P
     faq = json.loads((P(__file__).parent / "data" / "civil_service_faq.json").read_text(encoding="utf-8"))
     return faq
+
+
+# ---------------------------------------------------------------------------
+# 관리자 API
+# ---------------------------------------------------------------------------
+
+@app.get("/admin")
+async def admin_page():
+    return FileResponse("static/admin.html")
+
+
+@app.get("/admin/faq-stats")
+async def admin_faq_stats():
+    from pathlib import Path as P
+    faq_path = P(__file__).parent / "data" / "civil_service_faq.json"
+    faq = json.loads(faq_path.read_text(encoding="utf-8"))
+    stats = []
+    for cat, data in faq.items():
+        stats.append({
+            "category": cat,
+            "민원명": data.get("민원명", ""),
+            "담당부서": data.get("담당부서", ""),
+            "faq_count": len(data.get("faq", [])),
+            "has_안내": bool(data.get("안내")),
+        })
+    return {
+        "stats": stats,
+        "total_faq": sum(s["faq_count"] for s in stats),
+        "raw_api_exists": False,
+        "raw_api_total": 0,
+    }
+
+
+@app.post("/admin/fetch")
+async def admin_fetch():
+    """서울 열린데이터광장 4개 API 수집 + FAQ 자동 생성."""
+    import subprocess, sys
+    from pathlib import Path as P
+    script = str(P(__file__).parent / "scripts" / "fetch_and_generate.py")
+    result = subprocess.run(
+        [sys.executable, script],
+        capture_output=True, text=True, timeout=120,
+        cwd=str(P(__file__).parent),
+    )
+    return {"ok": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr}
+
+
+@app.post("/admin/reload")
+async def admin_reload():
+    return await admin_faq_stats()
+
 
 
 # ---------------------------------------------------------------------------
