@@ -149,6 +149,15 @@ body {
 .mic-btn.active .mic-icon { animation: pulse 0.7s infinite; }
 .mic-icon { font-size: 20px; }
 
+/* ── 입력 라벨 ── */
+.input-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: -4px;
+}
+.agent-label { color: #3fb950; }
+
 /* ── 텍스트 입력 ── */
 .text-input-area {
   display: flex; gap: 6px;
@@ -211,12 +220,18 @@ body {
 .chat-msg.caller.risk-caution { border-left: 3px solid var(--caution); }
 .chat-msg.caller.risk-danger  { border-left: 3px solid var(--danger); }
 .chat-msg.caller.risk-critical{ border-left: 3px solid var(--critical); }
+.chat-msg.agent {
+  background: rgba(63,185,80,0.1);
+  border: 1px solid rgba(63,185,80,0.3);
+  align-self: flex-end;
+}
 .chat-msg.ai {
   background: rgba(88,166,255,0.12);
   border: 1px solid rgba(88,166,255,0.3);
   align-self: flex-end;
 }
 .chat-msg .msg-sender { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+.chat-msg.agent .msg-sender { text-align: right; color: var(--normal); }
 .chat-msg.ai .msg-sender { text-align: right; color: var(--ai); }
 
 /* ── 상태 배지 ── */

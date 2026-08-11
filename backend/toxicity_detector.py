@@ -2,6 +2,8 @@ import json
 import re
 from pathlib import Path
 
+import moderation as mod
+
 DATA_DIR = Path(__file__).parent.parent / "data"
 
 
@@ -22,11 +24,11 @@ def _is_similar(a: str, b: str) -> bool:
 def analyze(text: str, history: list[str]) -> dict:
     bad_words, threat_patterns, high_threat = _load()
 
-    # ① 욕설·비속어 점수
+    # ① 욕설·비속어 점수 (키워드)
     matched_bad = [w for w in bad_words if w in text]
     profanity_score = min(100, len(matched_bad) * 35)
 
-    # ② 위협 표현 점수
+    # ② 위협 표현 점수 (키워드)
     matched_threats = [p for p in threat_patterns if p in text]
     high = [p for p in matched_threats if p in high_threat]
     threat_score = min(100, len(matched_threats) * 28 + len(high) * 22)
@@ -47,29 +49,42 @@ def analyze(text: str, history: list[str]) -> dict:
         anger_score += 18
     anger_score = min(100, anger_score)
 
-    # ④ 반복 발화 점수 — 이전 발화와의 유사도
+    # ④ 반복 발화 점수
     recent = history[-6:] if history else []
     repeat_count = sum(1 for h in recent if _is_similar(h, text))
     repetition_score = min(100, repeat_count * 22)
 
-    # 최종 위험도
-    risk_score = round(
+    # ⑤ 키워드 기반 위험도
+    keyword_score = round(
         profanity_score * 0.30
         + threat_score * 0.35
         + anger_score * 0.20
         + repetition_score * 0.15
     )
 
+    # ⑥ OpenAI Moderation API 결합
+    mod_result = mod.moderate(text)
+
+    if mod_result["available"]:
+        # Moderation 60% + 키워드 40% 가중 평균
+        risk_score = round(keyword_score * 0.4 + mod_result["mod_score"] * 0.6)
+        # OpenAI가 유해로 판정하면 최소 주의(15점) 보장
+        if mod_result["flagged"]:
+            risk_score = max(risk_score, 15)
+    else:
+        risk_score = keyword_score
+
     return {
-        "risk_score": risk_score,
-        "profanity_score": profanity_score,
-        "threat_score": threat_score,
-        "anger_score": anger_score,
-        "repetition_score": repetition_score,
+        "risk_score":        risk_score,
+        "profanity_score":   profanity_score,
+        "threat_score":      threat_score,
+        "anger_score":       anger_score,
+        "repetition_score":  repetition_score,
         "matched_bad_words": matched_bad,
-        "matched_threats": matched_threats,
-        "level": _level(risk_score),
-        "repeat_count": repeat_count,
+        "matched_threats":   matched_threats,
+        "level":             _level(risk_score),
+        "repeat_count":      repeat_count,
+        "moderation":        mod_result,
     }
 
 
@@ -83,9 +98,8 @@ def _level(score: int) -> str:
     return "critical"
 
 
-# 단계별 안내 메시지
 WARNING_MESSAGES = {
-    "caution": "원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.",
-    "danger": "폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.",
+    "caution":  "원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.",
+    "danger":   "폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.",
     "critical": "폭언이 반복되어 지금부터 AI 음성 상담으로 전환합니다. 민원 내용은 계속 처리됩니다.",
 }

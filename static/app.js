@@ -32,6 +32,8 @@ const micBtn       = $('mic-btn');
 const micLabel     = $('mic-label');
 const textInput    = $('text-input');
 const sendBtn      = $('send-btn');
+const agentInput   = $('agent-input');
+const agentSendBtn = $('agent-send-btn');
 const chatArea     = $('chat-area');
 const callStatus   = $('call-status-text');
 const callTimerEl  = $('call-timer');
@@ -47,6 +49,8 @@ function init() {
   micBtn.addEventListener('click', toggleCall);
   sendBtn.addEventListener('click', () => sendText());
   textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
+  agentSendBtn.addEventListener('click', () => sendAgentText());
+  agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAgentText(); });
   summaryBtn.addEventListener('click', generateSummary);
   $('demo-btn').addEventListener('click', runDemo);
   $('register-caller-btn').addEventListener('click', registerCaller);
@@ -224,6 +228,14 @@ function sendText() {
   textInput.value = '';
   if (!isCallActive) startCall();
   processUtterance(txt);
+}
+
+function sendAgentText() {
+  const txt = agentInput.value.trim();
+  if (!txt) return;
+  agentInput.value = '';
+  if (!isCallActive) startCall();
+  addChatMsg('agent', '🎧 상담사', txt, '');
 }
 
 // ── 핵심: 발화 처리 ──────────────────────────────────────────────────────
