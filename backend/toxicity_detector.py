@@ -43,7 +43,7 @@ def analyze(text: str, history: list[str]) -> dict:
         anger_score += 25
     if any(w in text for w in ["왜", "도대체", "대체", "어떻게 된 거야", "어떻게 된 거냐", "이게 뭐야"]):
         anger_score += 12
-    if any(w in text for w in ["바꿔", "나와", "나오라고", "내보내"]):
+    if any(w in text for w in ["바꿔", "나와", "나오라고", "내보내", "담당자 바꿔", "책임자", "윗사람"]):
         anger_score += 18
     anger_score = min(100, anger_score)
 
