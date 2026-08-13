@@ -246,9 +246,10 @@ function startCall() {
     callTimerEl.textContent = `${m}:${s}`;
   }, 1000);
 
-  if (recognition) {
-    try { recognition.start(); } catch {}
-  }
+  // 통화 시작 안내 멘트 — STT는 TTS 종료 후 자동 재개(suppressSTT 흐름)
+  const greeting = '안녕하세요. 화성시 민원 상담 서비스입니다. 거주하시는 지역과 불편하신 사항을 말씀해 주시면 담당 부서로 바로 연결해 드리겠습니다.';
+  addChatMsg('ai', '🔔 시스템', greeting, '');
+  speak(greeting);
 }
 
 function stopCall() {
