@@ -328,30 +328,50 @@ async def admin_faq_stats():
 
 @app.post("/admin/crawl")
 async def admin_crawl():
-    """화성소통봇 크롤러 실행 (전체 메뉴 수집)."""
-    import subprocess, sys
+    """화성소통봇 크롤러를 백그라운드로 실행 (전체 메뉴 수집)."""
+    import asyncio, sys
     from pathlib import Path as P
     script = str(P(__file__).parent / "scripts" / "crawl_hscity.py")
-    result = subprocess.run(
-        [sys.executable, script],
-        capture_output=True, text=True, timeout=600,
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable, script,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
         cwd=str(P(__file__).parent),
     )
-    return {"ok": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr}
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+        return {
+            "ok": proc.returncode == 0,
+            "stdout": stdout.decode("utf-8", errors="replace"),
+            "stderr": stderr.decode("utf-8", errors="replace"),
+        }
+    except asyncio.TimeoutError:
+        proc.kill()
+        return {"ok": False, "stdout": "", "stderr": "시간 초과 (600초)"}
 
 
 @app.post("/admin/crawl-test")
 async def admin_crawl_test():
     """화성소통봇 크롤러 테스트 (세정 메뉴만)."""
-    import subprocess, sys
+    import asyncio, sys
     from pathlib import Path as P
     script = str(P(__file__).parent / "scripts" / "crawl_hscity.py")
-    result = subprocess.run(
-        [sys.executable, script, "--test"],
-        capture_output=True, text=True, timeout=120,
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable, script, "--test",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
         cwd=str(P(__file__).parent),
     )
-    return {"ok": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr}
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        return {
+            "ok": proc.returncode == 0,
+            "stdout": stdout.decode("utf-8", errors="replace"),
+            "stderr": stderr.decode("utf-8", errors="replace"),
+        }
+    except asyncio.TimeoutError:
+        proc.kill()
+        return {"ok": False, "stdout": "", "stderr": "시간 초과 (120초)"}
 
 
 @app.get("/admin/rag-docs")
