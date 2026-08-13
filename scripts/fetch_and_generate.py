@@ -34,7 +34,7 @@ CATEGORIES = {
         "처리기간": "접수 후 14일 이내",
         "필요서류": ["이의신청서", "차량등록증 사본", "증빙자료(사진 등)"],
         "안내": "불법주정차 과태료에 이의가 있으신 경우 고지서를 받은 날로부터 60일 이내에 이의신청을 하실 수 있습니다.",
-        "_match": ["주차", "과태료", "주정차", "단속", "불법주차", "상습불법", "차로이탈", "수송", "교통"],
+        "_match": ["주차", "과태료", "주정차", "단속", "불법주차", "상습불법주차"],
         "faq": [],
     },
     "주민등록": {
@@ -150,6 +150,17 @@ def classify(text: str) -> str | None:
     return None
 
 
+def _is_quality_answer(answer: str) -> bool:
+    # 행정문서 형식이나 관련없는 데이터 걸러내기
+    bad_patterns = ["업무개요", "업무설명", "★", "사업종료", "DB정비중", "추진배경"]
+    if any(p in answer for p in bad_patterns):
+        return False
+    # 너무 긴 답변은 업무매뉴얼 문서일 가능성 높음
+    if len(answer) > 500:
+        return False
+    return True
+
+
 def extract_keywords(text: str) -> list[str]:
     stop = {"은","는","이","가","을","를","의","에","도","요","어요","나요","어떻게","뭔가요","합니까"}
     tokens = [t.strip("[]()？?") for t in text.split() if len(t.strip("[]()？?")) >= 2]
@@ -192,7 +203,7 @@ def main():
         if detail:
             answer = detail.get("ANSWER","").strip()
 
-        if answer:
+        if answer and _is_quality_answer(answer):
             faq_tp_map[cat].append({
                 "keywords": extract_keywords(quest),
                 "answer": answer[:400],
