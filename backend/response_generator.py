@@ -86,10 +86,13 @@ def get_faq_context(complaint_type: str) -> str:
     lines = [
         f"민원명: {info.get('민원명', '')}",
         f"담당부서: {info.get('담당부서', '')}",
+        f"연락처: {info.get('연락처', '')}",
         f"처리기간: {info.get('처리기간', '')}",
         f"필요서류: {', '.join(info.get('필요서류', []))}",
         f"안내: {info.get('안내', '')}",
     ]
+    if info.get("응대기준"):
+        lines.append(f"응대기준: {info['응대기준']}")
     for item in info.get("faq", []):
         lines.append(f"Q: {item.get('keywords', [])} → {item.get('answer', '')}")
     return "\n".join(lines)

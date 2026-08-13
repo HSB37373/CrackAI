@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>화성시 AI 민원 상담</title>
+  <link rel="stylesheet" href="static/chatbot.css">
+</head>
+<body>
+
+  <!-- 화면 1: 유형 선택 -->
+  <div id="screen-select" class="screen active">
+    <div class="chat-header">
+      <div class="chat-header-icon">🏛️</div>
+      <div>
+        <div class="chat-header-title">화성시 AI 민원 상담</div>
+        <div class="chat-header-sub">무엇을 도와드릴까요?</div>
+      </div>
+    </div>
+
+    <div class="select-body">
+      <div class="greeting-bubble">
+        안녕하세요! 화성시 AI 민원 상담 서비스입니다.<br>
+        아래에서 민원 유형을 선택해 주세요.
+      </div>
+      <div class="type-grid" id="type-grid">
+        <!-- 동적 생성 -->
+      </div>
+      <div class="direct-call">
+        <span>📞 직접 문의</span>
+        <a href="tel:031-000-0000" class="call-link">031-000-0000</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 화면 2: 민원 상담 채팅 -->
+  <div id="screen-chat" class="screen">
+    <div class="chat-header">
+      <button class="back-btn" id="back-btn">←</button>
+      <div class="chat-header-icon" id="chat-icon">📌</div>
+      <div>
+        <div class="chat-header-title" id="chat-title">민원 상담</div>
+        <div class="chat-header-sub" id="chat-dept">담당 부서</div>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chat-body">
+      <!-- 민원 정보 카드 -->
+      <div class="info-card" id="info-card"></div>
+      <!-- FAQ 아코디언 -->
+      <div class="faq-section" id="faq-section"></div>
+      <!-- 채팅 메시지 -->
+      <div id="chat-messages"></div>
+    </div>
+
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="궁금한 내용을 입력하세요..." />
+      <button id="chat-send">전송</button>
+    </div>
+  </div>
+
+  <script src="static/chatbot.js"></script>
+</body>
+</html>

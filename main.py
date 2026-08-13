@@ -4,6 +4,7 @@
 실행: uvicorn main:app --reload --port 8000
 """
 
+import json
 import sys
 import uuid
 from datetime import datetime
@@ -17,6 +18,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+FAQ_PATH = Path(__file__).parent / "data" / "civil_service_faq.json"
 
 import toxicity_detector as td
 import complaint_classifier as cc
@@ -246,10 +249,16 @@ async def clear_session(session_id: str):
 
 @app.get("/faq")
 async def get_faq():
-    import json
-    from pathlib import Path as P
-    faq = json.loads((P(__file__).parent / "data" / "civil_service_faq.json").read_text(encoding="utf-8"))
-    return faq
+    return json.loads(FAQ_PATH.read_text(encoding="utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# 관리자 API
+# ---------------------------------------------------------------------------
+
+@app.get("/chatbot")
+async def chatbot_page():
+    return FileResponse("static/chatbot.html")
 
 
 # ---------------------------------------------------------------------------
