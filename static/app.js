@@ -603,7 +603,7 @@ function updateWarningCounter(a) {
     if (count > 0 && remaining > 0) {
       const warnMsg = `욕설 경고 ${count}/${thresh} — 경고 ${remaining}회 남았습니다. 다음 욕설 시 AI 상담으로 전환됩니다.`;
       addChatMsg('ai', '⚠️ 시스템', warnMsg, '');
-      speak(warnMsg);
+      // speak는 showWarning에서 담당 (두 번 호출 시 덮어쓰기 방지)
     }
   }
 }
