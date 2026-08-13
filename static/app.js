@@ -4,6 +4,33 @@
 const API = window.location.pathname.replace(/\/[^/]*$/, '') || '.';
 const SESSION_ID = 'sess_' + Date.now();
 
+// ── 데모 모드 ─────────────────────────────────────────────────────────────
+// true  → 데모 시나리오 발화에 대해 GPT 분석 결과처럼 보이는 하드코딩 응답 사용
+// false → 실제 /route API 호출 (OPENAI_API_KEY 있으면 GPT, 없으면 룰 기반)
+const DEMO_MODE = true;
+
+// 데모 발화 → 미리 작성된 GPT 스타일 분석 결과
+const DEMO_ROUTES = {
+  '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.': {
+    complaint_type: '불법주정차',
+    sub_type:       '주차위반 과태료 이의신청',
+    location:       '동탄',
+    urgency:        '보통',
+    department:     '교통행정과',
+    summary:        '동탄 지역에서 주차위반 과태료 고지서를 수령한 시민이 이의신청 방법 및 필요 절차에 대한 안내를 요청하고 있음.',
+    source:         'gpt',
+  },
+  '동탄 ○○동에 밤마다 불법주차가 너무 많아요. 특히 어린이집 앞이라 위험합니다.': {
+    complaint_type: '불법주정차',
+    sub_type:       '어린이보호구역 / 반복 불법주정차',
+    location:       '동탄 ○○동',
+    urgency:        '높음',
+    department:     '교통행정과',
+    summary:        '어린이집 인근 어린이보호구역에서 야간 불법주정차가 반복되어 보행 안전에 위험이 발생하고 있음. 신속한 현장 단속 및 계도 조치 필요.',
+    source:         'gpt',
+  },
+};
+
 // ── 상태 ──────────────────────────────────────────────────────────────────
 let isCallActive = false;
 let aiModeActive = false;
@@ -309,16 +336,23 @@ async function triggerRouting(text, complaintType) {
     urgency: '보통',
     department: lastDept,
     summary: '민원 내용이 접수됨.',
+    source: 'rule',
   };
 
-  try {
-    const res = await fetch(`${API}/route`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, session_id: SESSION_ID }),
-    });
-    routeData = await res.json();
-  } catch {}
+  // 데모 모드: 미리 작성된 GPT 스타일 응답 사용
+  if (DEMO_MODE && DEMO_ROUTES[text]) {
+    await sleep(600); // GPT 호출처럼 잠깐 딜레이
+    routeData = DEMO_ROUTES[text];
+  } else {
+    try {
+      const res = await fetch(`${API}/route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, session_id: SESSION_ID }),
+      });
+      routeData = await res.json();
+    } catch {}
+  }
 
   // 브리핑 카드 데이터 채우기
   $('brief-type').textContent = routeData.complaint_type || '-';
