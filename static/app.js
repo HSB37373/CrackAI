@@ -324,10 +324,16 @@ async function processUtterance(text) {
     await activateAI(analysis.risk_score);
   } else if (!aiModeActive) {
     updateWarningCounter(analysis);
-    if (analysis.warning_message && analysis.level !== 'normal') {
+    // 욕설 감지 즉시 경고 (점수/레벨 무관)
+    if (analysis.matched_bad_words?.length) {
       const count = analysis.profanity_warning_count || 0;
-      const prefix = count >= 3 ? '반복적인 ' : `욕설 경고 ${count}회. `;
-      showWarning(prefix + analysis.warning_message, analysis.level);
+      const WARN_VOICE = [
+        '',
+        '원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.',
+        '폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.',
+      ];
+      const msg = WARN_VOICE[count];
+      if (msg) showWarning(msg, 'danger');
     }
   }
 
