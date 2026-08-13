@@ -406,6 +406,12 @@ async function triggerRouting(text, complaintType) {
     srcBadge.classList.remove('hidden');
   }
 
+  // TTS: 녹음·폭언 안내
+  const legalMsg = '본 상담 내용은 녹음되며, 욕설 및 폭언 사용 시 법적 조치 및 AI 상담사로 전환될 수 있습니다.';
+  addChatMsg('ai', '🔔 시스템 안내', legalMsg, '');
+  speak(legalMsg);
+  await sleep(4500);
+
   // TTS: 담당 부서 연결 안내
   const dept = routeData.department || '담당';
   const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
