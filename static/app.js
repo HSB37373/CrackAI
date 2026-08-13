@@ -31,6 +31,14 @@ const DEMO_ROUTES = {
   },
 };
 
+// 데모 상담원 응답 — 민원인 발화 → 상담원이 할 법한 답변
+const DEMO_AGENT_RESPONSES = {
+  '서류는 뭐가 필요한가요?':
+    '이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 그리고 증빙자료(현장 사진 등)입니다. 고지서 수령 후 60일 이내에 신청하셔야 하며, 교통행정과 방문 또는 정부24 온라인으로 접수하실 수 있습니다.',
+  '이의신청 서류 제출 기한이 언제까지예요?':
+    '이의신청 기간은 과태료 고지서를 받으신 날로부터 60일 이내입니다. 처리 기간은 접수 후 14일이며, 결과는 등기우편으로 통보해 드립니다.',
+};
+
 // ── 상태 ──────────────────────────────────────────────────────────────────
 let isCallActive = false;
 let aiModeActive = false;
@@ -55,6 +63,9 @@ let banTimerInterval = null;
 // AI 라우팅 단계
 let routingPhase = true;   // 첫 발화 전까지 true
 let routingDone  = false;  // 라우팅 브리핑 표시 완료 여부
+
+// TTS 재생 중 STT 피드백 루프 방지 플래그
+let suppressSTT  = false;
 
 // ── DOM 참조 ──────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -103,6 +114,7 @@ function initSpeechRecognition() {
   recognition.interimResults = true;
 
   recognition.onresult = evt => {
+    if (suppressSTT) return; // TTS 재생 중 피드백 루프 차단
     let interim = '', final = '';
     for (let i = evt.resultIndex; i < evt.results.length; i++) {
       const t = evt.results[i][0].transcript;
@@ -317,9 +329,15 @@ async function processUtterance(text) {
     }
   }
 
-  // AI 모드이면 응답 생성 (전환된 바로 그 순간은 제외)
+  // AI 모드이면 AI 응답 생성 (전환된 바로 그 순간은 제외)
   if (!justActivated && (aiModeActive || analysis.ai_activated)) {
     await generateAIResponse(text, lastComplaintType);
+  }
+
+  // 모니터링 단계: 욕설·위협이 없는 발화에 상담원 응답
+  if (!routingPhase && !aiModeActive && !justActivated &&
+      !analysis.matched_bad_words?.length && !analysis.matched_threats?.length) {
+    await generateAgentResponse(text, lastComplaintType);
   }
 }
 
@@ -422,13 +440,51 @@ async function activateAI(score) {
   callIndicator.classList.add('ai-mode');
   updateSystemBadge('ai-dot', 'AI 상담 전환 중');
 
+  const systemMsgShort = score >= 80
+    ? `심각한 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`
+    : `폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
   addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
-  await sleep(800);
+  speak(systemMsgShort);
+  await sleep(3500);
   addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
   speak(aiGreeting);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
+}
+
+// ── 모니터링 단계 상담원 응답 ──────────────────────────────────────────────
+async function generateAgentResponse(question, complaintType) {
+  await sleep(800);
+
+  let response;
+
+  // 데모 모드: 발화별 하드코딩 응답 우선
+  if (DEMO_MODE && DEMO_AGENT_RESPONSES[question]) {
+    response = DEMO_AGENT_RESPONSES[question];
+  } else {
+    try {
+      const res = await fetch(`${API}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          complaint_type: complaintType,
+          question,
+          session_id: SESSION_ID,
+          use_ai: false,
+        }),
+      });
+      const data = await res.json();
+      response = data.response;
+    } catch {
+      response = null;
+    }
+  }
+
+  if (response) {
+    addChatMsg('agent', '🎧 상담원', response, '');
+    speak(response);
+  }
 }
 
 // ── AI 응답 생성 ──────────────────────────────────────────────────────────
@@ -463,9 +519,9 @@ async function generateAIResponse(question, complaintType) {
 // ── 음성 출력 ─────────────────────────────────────────────────────────────
 function speak(text) {
   if (!window.speechSynthesis) return;
+  suppressSTT = true;
   speechSynthesis.cancel();
 
-  // TTS 재생 중 STT 중단 → 피드백 루프 방지
   if (recognition && isCallActive) {
     try { recognition.stop(); } catch {}
   }
@@ -475,12 +531,17 @@ function speak(text) {
   utt.rate  = 0.92;
   utt.pitch = 1.05;
 
-  // TTS 끝나면 STT 재개
-  utt.onend = () => {
-    if (isCallActive && recognition) {
-      try { recognition.start(); } catch {}
-    }
+  const resume = () => {
+    // TTS 종료 후 500ms 대기 후 STT 재개 (에코 유입 방지)
+    setTimeout(() => {
+      suppressSTT = false;
+      if (isCallActive && recognition) {
+        try { recognition.start(); } catch {}
+      }
+    }, 500);
   };
+  utt.onend   = resume;
+  utt.onerror = resume;
 
   speechSynthesis.speak(utt);
 }
@@ -540,7 +601,9 @@ function updateWarningCounter(a) {
     warnEl.style.color = remaining === 0 ? 'var(--danger)' : remaining === 1 ? 'var(--caution)' : '';
 
     if (count > 0 && remaining > 0) {
-      addChatMsg('ai', '⚠️ 시스템', `욕설 경고 ${count}/${thresh} — 경고 ${remaining}회 남았습니다. 다음 욕설 시 AI 상담으로 전환됩니다.`, '');
+      const warnMsg = `욕설 경고 ${count}/${thresh} — 경고 ${remaining}회 남았습니다. 다음 욕설 시 AI 상담으로 전환됩니다.`;
+      addChatMsg('ai', '⚠️ 시스템', warnMsg, '');
+      speak(warnMsg);
     }
   }
 }
@@ -633,7 +696,7 @@ function removeInterim() {
 function showWarning(msg, level) {
   if (level === 'caution' || level === 'danger') {
     addChatMsg('ai', '⚠️ 시스템', msg, '');
-    if (level === 'danger') speak(msg);
+    speak(msg); // caution, danger 모두 음성 안내
   }
 }
 
