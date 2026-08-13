@@ -450,6 +450,11 @@ async function activateAI(score) {
   await sleep(3500);
   addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
   speak(aiGreeting);
+  await sleep(800);
+  addChatbotLink();
+  const chatbotGuide = '채팅 상담을 원하시면 화면에 표시된 화성시 민원 챗봇 링크를 이용해 주세요.';
+  await sleep(2000);
+  speak(chatbotGuide);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
@@ -676,6 +681,23 @@ function addChatMsg(type, sender, text, extra) {
   const el = document.createElement('div');
   el.className = `chat-msg ${type} ${extra}`;
   el.innerHTML = `<div class="msg-sender">${sender}</div><div>${escHtml(text)}</div>`;
+  chatArea.appendChild(el);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addChatbotLink() {
+  const empty = chatArea.querySelector('.chat-placeholder');
+  if (empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = 'chat-msg ai';
+  el.innerHTML = `
+    <div class="msg-sender">🔔 시스템</div>
+    <div>음성 상담 대신 채팅 상담을 원하시면 화성시 민원 챗봇을 이용하실 수 있습니다.</div>
+    <a class="chatbot-link-btn" href="https://g.answerny.ai/chatbot/projects/hscity/chatbot_hscity.html"
+       target="_blank" rel="noopener noreferrer">
+      💬 화성시 민원 챗봇 바로가기 →
+    </a>`;
   chatArea.appendChild(el);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
