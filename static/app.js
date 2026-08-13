@@ -329,8 +329,8 @@ async function processUtterance(text) {
       const count = analysis.profanity_warning_count || 0;
       const WARN_VOICE = [
         '',
-        '원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.',
-        '폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.',
+        '경고 1회. 원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.',
+        '경고 2회. 폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.',
       ];
       const msg = WARN_VOICE[count];
       if (msg) showWarning(msg, 'danger');
@@ -449,8 +449,8 @@ async function activateAI(score) {
   updateSystemBadge('ai-dot', 'AI 상담 전환 중');
 
   const systemMsgShort = score >= 80
-    ? `심각한 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`
-    : `폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
+    ? `반복적인 심각한 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`
+    : `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
   addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
   speak(systemMsgShort);
   await sleep(3500);
