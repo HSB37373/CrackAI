@@ -325,7 +325,9 @@ async function processUtterance(text) {
   } else if (!aiModeActive) {
     updateWarningCounter(analysis);
     if (analysis.warning_message && analysis.level !== 'normal') {
-      showWarning(analysis.warning_message, analysis.level);
+      const count = analysis.profanity_warning_count || 0;
+      const prefix = count >= 3 ? '반복적인 ' : `욕설 경고 ${count}회. `;
+      showWarning(prefix + analysis.warning_message, analysis.level);
     }
   }
 
