@@ -1,0 +1,1148 @@
+[
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_보건소 위치_default",
+    "button_name": "보건소 위치",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_보건소 검사 종류_default",
+    "button_name": "보건소 각종 검사 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_복지_건강진단서(보건증)_상위 인텐트_default",
+    "button_name": "보건증 업무",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_의료기관 및 약국정보_default",
+    "button_name": "의료기관 및 약국정보",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_조리사 면허증 신규 발급_default",
+    "button_name": "조리사 면허증",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_복지_묘지 개장신고_상위 인텐트_default",
+    "button_name": "묘지 업무 관련",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_복지_화성시 관내 납골당_상위 인텐트_default",
+    "button_name": "화성시 사설 납골당",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_복지_함백산 추모공원_상위 인텐트_default",
+    "button_name": "화성시 공설 납골당",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 가족센터_밸류 답변_가정&센터",
+    "button_name": "화성시 가족센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_신생아 출산지원금 지원사업_default",
+    "button_name": "신생아 출산지원금 지원사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_첫만남이용권 바우처_default",
+    "button_name": "첫만남 이용권 바우처",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_화성 아이사랑키움_default",
+    "button_name": "화성 아이사랑키움",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_화성시 어린이문.화센터_default",
+    "button_name": "화성시어린이문화센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_화성시 AI놀이터_default",
+    "button_name": "화성시 AI놀이터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_화성시 I신나 놀이터_default",
+    "button_name": "화성시 I신나 놀이터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 장애인가족지원센터_밸류 답변_가족",
+    "button_name": "화성시장애인가족지원센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_경기남부 장애인권익옹호기관_밸류 답변_남부",
+    "button_name": "경기남부장애인 권익옹호기관",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 정신건강복지센터_밸류 답변_센터",
+    "button_name": "화성시정신건강복지센터(부설)자살예방센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_정신건강 심리상담 바우처사업_default",
+    "button_name": "정신건강 심리상담 바우처사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 중독관리 통합지원센터_밸류 답변_중독",
+    "button_name": "화성시 중독관리 통합지원센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건·복지_경기도 청년 기본 소득_default",
+    "button_name": "경기도 청년 기본 소득",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 여성가족다문화과_기본 답변_default(여성)",
+    "button_name": "화성시 저출생대응과",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 가정폭력성폭력_밸류 답변_공동",
+    "button_name": "화성시 바로희망팀",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 가정폭력성폭력_밸류 답변_통합",
+    "button_name": "화성시 성폭력가정폭력 통합상담소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 청소년성문화센터_기본 답변_default(청소년)",
+    "button_name": "화성시 청소년성문화센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성가정상담소_밸류 답변_가정&상담",
+    "button_name": "화성가정상담소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성시 아동청소년 정신건강복지센터_밸류 답변_아동",
+    "button_name": "화성시아동청소년 정신건강복지센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_경기남부 노인보호전문기관_밸류 답변_남부",
+    "button_name": "경기남부노인보호전문기관",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_다누리콜센터_기본 답변_default(다누리)",
+    "button_name": "다누리콜센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성동탄경찰서_밸류 답변_동탄",
+    "button_name": "화성동탄경찰서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_고유가피해지원금안내_default",
+    "child_query": "btn_보건복지_화성서부경찰서_밸류 답변_서부",
+    "button_name": "화성서부경찰서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_최상위_지방세_default",
+    "button_name": "지방세 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 납부 방법_상위 인텐트_default",
+    "button_name": "지방세 납부 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 조회 방법_ARS_default",
+    "button_name": "지방세 조회 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_마을세무사_상위 인텐트_default",
+    "button_name": "마을세무사 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_개별 주택 가격_상위 인텐트_default",
+    "button_name": "개별 주택 가격 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_공동 주택 가격_상위 인텐트_default",
+    "button_name": "공동 주택 가격 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_건축물 시가표준액_상위 인텐트_default",
+    "button_name": "건축물 시가표준액 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_개별공시지가_default",
+    "button_name": "개별공시지가",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_차량 시가표준액_상위 인텐트_default",
+    "button_name": "차량 시가표준액 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 전자고지 신청_상위 인텐트_default",
+    "button_name": "지방세 전자고지 신청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 고지서 송달장소 변경신고_상위 인텐트_default",
+    "button_name": "고지서 송달장소 변경신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 세목별 과세증명서_상위 인텐트_default",
+    "button_name": "지방세 세목별 과세증명서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 납세(완납) 증명서 발급_상위 인텐트_default",
+    "button_name": "지방세 납세 증명서 발급",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 체납 압류 확인 방법_상위 인텐트_default",
+    "button_name": "지방세 체납 압류 확인",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 체납 수납 후 해제 기간_상위 인텐트_default",
+    "button_name": "수납 후 압류해제 기간",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn_세정_지방세 납부 방법_상위 인텐트_자동이체",
+    "button_name": "지방세 자동이체 신청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn__E22. 세정_기본 답변_지방세 환급금 여부 확인 및 신청 방법_default",
+    "button_name": "미지급 지방세환급금 청구 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_세정_default",
+    "child_query": "btn__E01_01. 세정_기본 답변_지방세 납부 지연시 가산세_default",
+    "button_name": "지방세 납부 지연시 가산세",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_자동차세_상위 인텐트_default",
+    "button_name": "자동차세 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_자동차세 연납 신청_상위 인텐트_default",
+    "button_name": "자동차세 연납 신청 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_자동차세 연납 환급_상위 인텐트_default",
+    "button_name": "자동차세 연납 환급 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_재산세_상위 인텐트_default",
+    "button_name": "재산세 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_주민세(개인분)_상위 인텐트_default",
+    "button_name": "주민세(개인분) 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_주민세(사업소분)_상위 인텐트_default",
+    "button_name": "주민세(사업소분) 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_부동산 취득세_상위 인텐트_default",
+    "button_name": "부동산 취득세 방문처",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_지방세_default",
+    "child_query": "btn_세정_등록면허세_상위 인텐트_default",
+    "button_name": "등록면허세 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_화성시 관내 차량등록 사업소_상위 인텐트_default",
+    "button_name": "차량등록과",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_최상위_자동차 등록_default",
+    "button_name": "자동차 등록 관련 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차 등록원부 발급_상위 인텐트_default",
+    "button_name": "자동차 등록원부 발급 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차 등록증 발급_상위 인텐트_default",
+    "button_name": "자동차 등록증 발급 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_당일 발급 자동차 번호판대_상위 인텐트_default",
+    "button_name": "당일 발급 자동차 번호판대",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차번호판 제작소_상위 인텐트_default",
+    "button_name": "자동차번호판 제작소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차번호판 변경 가능 사유_상위 인텐트_default",
+    "button_name": "자동차번호 변경 가능 사유",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_저공해차 확인_상위 인텐트_default",
+    "button_name": "저공해차 확인 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차 정기검사(종합검사)_과태료_상위 인텐트_default",
+    "button_name": "자동차 정기·종합 검사 과태료",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차 정기검사(종합검사) 검사소_상위 인텐트_default",
+    "button_name": "자동차 정기·종합 검사소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_자동차 의무보험 미가입_상위 인텐트_default",
+    "button_name": "자동차 의무보험 미가입 과태료",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_건설기계 조종사 안전교육_상위 인텐트_default",
+    "button_name": "건설기계 조종사 안전교육",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통·차량_건설기계 조종사 면허증 발급_default",
+    "button_name": "건설기계 조종사 면허증 발급",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통·차량_공영주차장 현황_default",
+    "button_name": "공영주차장 현황",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통·차량_공영주차장 현황_$화물 관련",
+    "button_name": "화물자동차 공영차고지",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_최상위_불법 주정차_default",
+    "button_name": "불법 주정차 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_도로파손 및 도로관리_상위 인텐트_default",
+    "button_name": "도로파손 및 도로 관리",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_국가 배상신청 제도_상위 인텐트_default",
+    "button_name": "국가 배상신청 제도",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_버스노선 안내_상위 인텐트_default",
+    "button_name": "버스노선 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_공항버스 예약_상위 인텐트_default",
+    "button_name": "공항버스 예약",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통차량_화성시 무상교통 신청_상위 인텐트_default",
+    "button_name": "화성시 무상교통 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_교통차량_default",
+    "child_query": "btn_교통·차량_화성시 똑버스_default",
+    "button_name": "화성시 똑버스",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 등록 방법_인터넷 신규등록_default",
+    "button_name": "자동차 신규 등록",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 등록 방법_인터넷 이전등록_default",
+    "button_name": "자동차 이전 등록",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 변경 등록_상위 인텐트_default",
+    "button_name": "자동차 변경 등록",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 등록 방법_인터넷 말소등록_default",
+    "button_name": "자동차 말소 등록",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_이륜차 등록_상위 인텐트_default",
+    "button_name": "이륜차 등록",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 이전 등록 대행업체_상위 인텐트_default",
+    "button_name": "자동차 이전 등록 대행업체",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_자동차 등록_default",
+    "child_query": "btn_교통차량_자동차 등록 방법_인터넷 말소등록_여부",
+    "button_name": "자동차 말소 여부 확인",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차 단속_상위 인텐트_default",
+    "button_name": "불법 주정차 단속 요청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차_단속 기준_default",
+    "button_name": "불법 주정차 단속 기준",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차_과태료_default",
+    "button_name": "불법 주정차 과태료",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차_단속사진_default",
+    "button_name": "불법 주정차 단속사진",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차_휴대폰 문자알림 서비스_default",
+    "button_name": "휴대폰 문자알림 서비스",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_불법 주정차_default",
+    "child_query": "btn_교통차량_불법 주정차_이의신청(의견진술)_default",
+    "button_name": "불법 주정차 이의신청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_담당자 번호_상위 인텐트_default",
+    "button_name": "담당자 번호 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_부서 위치_상위 인텐트_default",
+    "button_name": "부서 위치 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_서식 다운로드_상위 인텐트_default",
+    "button_name": "서식 다운로드 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_통합예약시스템_상위 인텐트_default",
+    "button_name": "통합예약시스템 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_무인민원발급기_default",
+    "button_name": "무인민원발급기 위치 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_항공사진_default",
+    "button_name": "항공사진",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_민원신청(국민신문고)_$도와드림",
+    "button_name": "생활불편 도와드림",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_법률 상담_상위 인텐트_default",
+    "button_name": "무료 법률 상담",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_시민 안전 보험_상위 인텐트_default",
+    "button_name": "시민 안전 보험 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_민방위 교육 일정_상위 인텐트_default",
+    "button_name": "민방위 교육 일정",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_화성시 소식지_default",
+    "button_name": "화성시 소식지",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_고향사랑기부제_기본 답변_default",
+    "button_name": "고향사랑기부제",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_민원신청(국민신문고)_default",
+    "button_name": "민원신청(국민신문고)",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_수치지형도_default",
+    "button_name": "수치지형도",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_최상위_여권_default",
+    "button_name": "여권 접수 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_최상위_주민 등록_default",
+    "button_name": "주민등록 업무 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_가족관계증명서 발급_상위 인텐트_default",
+    "button_name": "가족관계증명서 발급",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_인감증명서 발급_상위 인텐트_default",
+    "button_name": "인감증명서 발급",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_공동주택 업무_기본 답변_default",
+    "button_name": "공동주택 업무 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_전월세 신고제_default",
+    "button_name": "전월세 신고제",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_전문건설업 안내_default",
+    "button_name": "전문건설업 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_혼인신고_상위 인텐트_default",
+    "button_name": "혼인신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_이혼신고_상위 인텐트_default",
+    "button_name": "이혼신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_개명신고_상위 인텐트_default",
+    "button_name": "개명신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_사망신고_상위 인텐트_default",
+    "button_name": "사망신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_내국인 인감신고_default",
+    "button_name": "내국인 인감신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_희망화성 지역화폐_default",
+    "button_name": "희망화성 지역화폐",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_기타_유관기관 번호_등기소_default",
+    "button_name": "등기소 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_기타_유관기관 번호_세무서_default",
+    "button_name": "세무서 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_기타_유관기관 번호_소방서_default",
+    "button_name": "소방서 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_기타_유관기관 번호_신호위반 과태료_default",
+    "button_name": "경찰서 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_기타_유관기관 번호_측량신청_default",
+    "button_name": "LX한국국토정보공사(측량) 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_행정일반_default",
+    "child_query": "btn_행정일반_화성시 일자리센터_default",
+    "button_name": "화성시 일자리센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_행정일반_전문건설업 안내_default",
+    "child_query": "btn_행정일반_전문건설업 안내_$절차",
+    "button_name": "전문건설업 등록절차 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_행정일반_전문건설업 안내_default",
+    "child_query": "btn_행정일반_전문건설업 안내_$연락처",
+    "button_name": "전문건설업 담당자 연락처",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_행정일반_전문건설업 안내_default",
+    "child_query": "btn_행정일반_전문건설업 안내_$방문",
+    "button_name": "전문건설업 등록 및 신고 접수 방문처",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_행정일반_전문건설업 안내_default",
+    "child_query": "btn_행정일반_전문건설업 안내_$서류",
+    "button_name": "전문건설업 구비서류 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_행정일반_전문건설업 안내_default",
+    "child_query": "btn_행정일반_전문건설업 안내_$기간",
+    "button_name": "전문건설업 등록 및 신고 신청 처리기간",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_환경개선부담금_상위 인텐트_default",
+    "button_name": "환경개선부담금 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_로드킬(동물사체) 처리_상위 인텐트_default",
+    "button_name": "로드킬(동물사체) 처리",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_쓰레기_상위 인텐트_default",
+    "button_name": "쓰레기 관련 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_노후경유차 조기폐차 보조금 지원사업_default",
+    "button_name": "노후경유차 조기폐차 보조금 지원사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_수도 요금_상위 인텐트_default",
+    "button_name": "수도 요금 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_환경_default",
+    "child_query": "btn_환경_정화조_상위 인텐트_default",
+    "button_name": "정화조 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_보건소 위치_default",
+    "button_name": "보건소 위치",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_보건소 검사 종류_default",
+    "button_name": "보건소 각종 검사 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_복지_건강진단서(보건증)_상위 인텐트_default",
+    "button_name": "보건증 업무",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_의료기관 및 약국정보_default",
+    "button_name": "의료기관 및 약국정보",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_조리사 면허증 신규 발급_default",
+    "button_name": "조리사 면허증",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_복지_묘지 개장신고_상위 인텐트_default",
+    "button_name": "묘지 업무 관련",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_복지_화성시 관내 납골당_상위 인텐트_default",
+    "button_name": "화성시 사설 납골당",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_복지_함백산 추모공원_상위 인텐트_default",
+    "button_name": "화성시 공설 납골당",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 가족센터_밸류 답변_가정&센터",
+    "button_name": "화성시 가족센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_신생아 출산지원금 지원사업_default",
+    "button_name": "신생아 출산지원금 지원사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_첫만남이용권 바우처_default",
+    "button_name": "첫만남 이용권 바우처",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_화성 아이사랑키움_default",
+    "button_name": "화성 아이사랑키움",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_화성시 어린이문.화센터_default",
+    "button_name": "화성시어린이문화센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_화성시 AI놀이터_default",
+    "button_name": "화성시 AI놀이터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_화성시 I신나 놀이터_default",
+    "button_name": "화성시 I신나 놀이터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 장애인가족지원센터_밸류 답변_가족",
+    "button_name": "화성시장애인가족지원센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_경기남부 장애인권익옹호기관_밸류 답변_남부",
+    "button_name": "경기남부장애인 권익옹호기관",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 정신건강복지센터_밸류 답변_센터",
+    "button_name": "화성시정신건강복지센터(부설)자살예방센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_정신건강 심리상담 바우처사업_default",
+    "button_name": "정신건강 심리상담 바우처사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 중독관리 통합지원센터_밸류 답변_중독",
+    "button_name": "화성시 중독관리 통합지원센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건·복지_경기도 청년 기본 소득_default",
+    "button_name": "경기도 청년 기본 소득",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 여성가족다문화과_기본 답변_default(여성)",
+    "button_name": "화성시 저출생대응과",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 가정폭력성폭력_밸류 답변_공동",
+    "button_name": "화성시 바로희망팀",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 가정폭력성폭력_밸류 답변_통합",
+    "button_name": "화성시 성폭력가정폭력 통합상담소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 청소년성문화센터_기본 답변_default(청소년)",
+    "button_name": "화성시 청소년성문화센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성가정상담소_밸류 답변_가정&상담",
+    "button_name": "화성가정상담소",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성시 아동청소년 정신건강복지센터_밸류 답변_아동",
+    "button_name": "화성시아동청소년 정신건강복지센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_경기남부 노인보호전문기관_밸류 답변_남부",
+    "button_name": "경기남부노인보호전문기관",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_다누리콜센터_기본 답변_default(다누리)",
+    "button_name": "다누리콜센터",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성동탄경찰서_밸류 답변_동탄",
+    "button_name": "화성동탄경찰서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_보건복지_default",
+    "child_query": "btn_보건복지_화성서부경찰서_밸류 답변_서부",
+    "button_name": "화성서부경찰서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_환경개선부담금_상위 인텐트_default",
+    "button_name": "환경개선부담금 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_로드킬(동물사체) 처리_상위 인텐트_default",
+    "button_name": "로드킬(동물사체) 처리",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_쓰레기_상위 인텐트_default",
+    "button_name": "쓰레기 관련 정보 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_노후경유차 조기폐차 보조금 지원사업_default",
+    "button_name": "노후경유차 조기폐차 보조금 지원사업",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_수도 요금_상위 인텐트_default",
+    "button_name": "수도 요금 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_문화관광_default",
+    "child_query": "btn_환경_정화조_상위 인텐트_default",
+    "button_name": "정화조 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_최상위_지방세_default",
+    "button_name": "지방세 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 납부 방법_상위 인텐트_default",
+    "button_name": "지방세 납부 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 조회 방법_ARS_default",
+    "button_name": "지방세 조회 방법",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_마을세무사_상위 인텐트_default",
+    "button_name": "마을세무사 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_개별 주택 가격_상위 인텐트_default",
+    "button_name": "개별 주택 가격 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_공동 주택 가격_상위 인텐트_default",
+    "button_name": "공동 주택 가격 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_건축물 시가표준액_상위 인텐트_default",
+    "button_name": "건축물 시가표준액 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_개별공시지가_default",
+    "button_name": "개별공시지가",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_차량 시가표준액_상위 인텐트_default",
+    "button_name": "차량 시가표준액 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 전자고지 신청_상위 인텐트_default",
+    "button_name": "지방세 전자고지 신청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 고지서 송달장소 변경신고_상위 인텐트_default",
+    "button_name": "고지서 송달장소 변경신고",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 세목별 과세증명서_상위 인텐트_default",
+    "button_name": "지방세 세목별 과세증명서",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 납세(완납) 증명서 발급_상위 인텐트_default",
+    "button_name": "지방세 납세 증명서 발급",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 체납 압류 확인 방법_상위 인텐트_default",
+    "button_name": "지방세 체납 압류 확인",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 체납 수납 후 해제 기간_상위 인텐트_default",
+    "button_name": "수납 후 압류해제 기간",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn_세정_지방세 납부 방법_상위 인텐트_자동이체",
+    "button_name": "지방세 자동이체 신청",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn__E22. 세정_기본 답변_지방세 환급금 여부 확인 및 신청 방법_default",
+    "button_name": "미지급 지방세환급금 청구 안내",
+    "url": ""
+  },
+  {
+    "parent_query": "btn_최상위_정책광장_default",
+    "child_query": "btn__E01_01. 세정_기본 답변_지방세 납부 지연시 가산세_default",
+    "button_name": "지방세 납부 지연시 가산세",
+    "url": ""
+  }
+]
