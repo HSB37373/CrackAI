@@ -43,11 +43,7 @@ def _build_info_response(info: dict) -> str:
 
 
 def _general_response(question: str) -> str:
-    return (
-        "안녕하세요. 문의하신 내용을 확인하겠습니다. "
-        "구체적인 민원 내용을 말씀해 주시면 안내해 드리겠습니다. "
-        "주민센터 또는 120 다산콜센터로 문의하실 수도 있습니다."
-    )
+    return "네, 말씀해 주세요."
 
 
 def get_ai_response(complaint_type: str, question: str, context: str) -> str:

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>민원 AI 보호 시스템</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
@@ -44,10 +46,18 @@
         <span id="mic-label">통화 시작</span>
       </button>
 
-      <!-- 텍스트 입력 (마이크 대체 / 데모용) -->
+      <!-- 민원인 입력 -->
+      <div class="input-label">📞 민원인</div>
       <div class="text-input-area">
-        <input type="text" id="text-input" placeholder="마이크 대신 직접 입력..." />
+        <input type="text" id="text-input" placeholder="민원인 발화 입력..." />
         <button id="send-btn">전송</button>
+      </div>
+
+      <!-- 상담사 입력 -->
+      <div class="input-label agent-label">🎧 상담사</div>
+      <div class="text-input-area">
+        <input type="text" id="agent-input" placeholder="상담사 응대 내용 입력..." />
+        <button id="agent-send-btn">전송</button>
       </div>
 
       <div class="chat-area" id="chat-area">
