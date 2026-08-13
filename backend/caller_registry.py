@@ -6,7 +6,7 @@ BLACKLIST_PATH = Path(__file__).parent.parent / "data" / "blacklist.json"
 EXPIRY = timedelta(days=182)  # 6개월
 
 # 6개월 내 누적 전과 횟수별 상담원 통화 제한 시간
-_BAN_HOURS = {1: 1, 2: 3}  # 1회→1시간, 2회→3시간, 3회+→24시간
+_BAN_HOURS = {1: 1, 2: 6}  # 1회→1시간, 2회→6시간, 3회+→24시간
 
 def _ban_duration(recent_count: int) -> timedelta:
     return timedelta(hours=_BAN_HOURS.get(recent_count, 24))

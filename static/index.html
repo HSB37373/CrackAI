@@ -127,15 +127,6 @@
             <div class="metric-bar-fill anger" id="anger-bar"></div>
           </div>
         </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>반복 발화</span>
-            <span id="repetition-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill repetition" id="repetition-bar"></div>
-          </div>
-        </div>
       </div>
 
       <!-- 감지 카운터 -->
@@ -151,10 +142,6 @@
         <div class="counter-item">
           <div class="counter-num" id="cnt-turns">0</div>
           <div class="counter-label">총 발화 수</div>
-        </div>
-        <div class="counter-item">
-          <div class="counter-num" id="cnt-repeat">0</div>
-          <div class="counter-label">반복 발화</div>
         </div>
       </div>
 
@@ -172,6 +159,50 @@
       <div class="panel-header">
         <span class="panel-icon">👮</span>
         <h2>담당자 보호 대시보드</h2>
+      </div>
+
+      <!-- AI 민원 분석 브리핑 카드 (라우팅 완료 시 표시) -->
+      <div class="routing-brief hidden" id="routing-brief">
+        <div class="routing-brief-header">
+          <span>🤖 AI 민원 분석</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="routing-source-badge hidden" id="routing-source-badge"></span>
+            <span class="routing-badge" id="routing-badge">분석 중</span>
+          </div>
+        </div>
+        <div class="routing-brief-body">
+          <div class="brief-row">
+            <span class="brief-key">민원 유형</span>
+            <span class="brief-val" id="brief-type">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">세부 유형</span>
+            <span class="brief-val brief-sub" id="brief-sub-type">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">지역</span>
+            <span class="brief-val" id="brief-location">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">긴급도</span>
+            <span class="brief-val" id="brief-urgency">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">관련 부서</span>
+            <span class="brief-val brief-dept" id="brief-dept">-</span>
+          </div>
+          <div class="brief-summary-box">
+            <div class="brief-summary-label">민원 요약</div>
+            <div class="brief-summary-text" id="brief-summary">-</div>
+          </div>
+        </div>
+        <div class="routing-connecting hidden" id="routing-connecting">
+          <span class="conn-dot"></span><span class="conn-dot"></span><span class="conn-dot"></span>
+          <span id="routing-dept-label">담당 상담원에게 연결 중...</span>
+        </div>
+        <div class="routing-connected hidden" id="routing-connected">
+          ✅ 상담원 연결 완료 &mdash; 통화 모니터링 시작
+        </div>
       </div>
 
       <!-- 민원인 정보 조회 -->

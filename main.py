@@ -19,6 +19,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+FAQ_PATH = Path(__file__).parent / "data" / "civil_service_faq.json"
+
 import toxicity_detector as td
 import complaint_classifier as cc
 import response_generator as rg
@@ -52,7 +54,7 @@ def get_session(session_id: str) -> dict:
             "caller_phone": "",
             "caller_offense_count": 0,
             "profanity_warning_count": 0,
-            "ai_threshold": 2,
+            "ai_threshold": 3,
             "offense_recorded": False,
         }
     return sessions[session_id]
@@ -154,6 +156,15 @@ async def register_caller(req: CallerRegisterRequest):
     session["ai_threshold"] = threshold
     session["caller_offense_count"] = recent_count
 
+    # AI 전환 상태이고 아직 전과 미기록이면 자동 저장
+    if session.get("ai_activated") and not session.get("offense_recorded"):
+        cr.record_offense(
+            req.phone, req.name, req.session_id,
+            session.get("ai_activation_score", 50)
+        )
+        session["offense_recorded"] = True
+        recent_count = cr.get_recent_offense_count(req.phone)
+
     caller = cr.get_caller(req.phone)
     return {
         "name": req.name,
@@ -247,15 +258,29 @@ async def clear_session(session_id: str):
 
 @app.get("/faq")
 async def get_faq():
-    import json
-    from pathlib import Path as P
-    faq = json.loads((P(__file__).parent / "data" / "civil_service_faq.json").read_text(encoding="utf-8"))
-    return faq
+    return json.loads(FAQ_PATH.read_text(encoding="utf-8"))
+
+
+class RouteRequest(BaseModel):
+    text: str
+    session_id: str = "default"
+
+
+@app.post("/route")
+async def route_call(req: RouteRequest):
+    """자연어 민원 텍스트에서 라우팅 브리핑 추출."""
+    brief = cc.build_routing_brief(req.text)
+    return brief
 
 
 # ---------------------------------------------------------------------------
-# 관리자 API
+# 페이지 라우트
 # ---------------------------------------------------------------------------
+
+@app.get("/chatbot")
+async def chatbot_page():
+    return FileResponse("static/chatbot.html")
+
 
 @app.get("/admin")
 async def admin_page():
@@ -301,6 +326,38 @@ async def admin_fetch():
 @app.post("/admin/reload")
 async def admin_reload():
     return await admin_faq_stats()
+
+
+@app.get("/admin/blacklist")
+async def admin_blacklist():
+    data = cr._load()
+    callers = []
+    for phone, caller in data.get("callers", {}).items():
+        recent = cr.get_recent_offense_count(phone)
+        ban = cr.get_ban_status(phone)
+        callers.append({
+            "name": caller.get("name", "미확인"),
+            "phone": phone,
+            "total_offenses": len(caller.get("history", [])),
+            "recent_offenses": recent,
+            "last_offense": caller.get("last_offense", ""),
+            "is_banned": ban["is_banned"],
+            "ban_expires_at": ban["expires_at"],
+            "remaining_seconds": ban["remaining_seconds"],
+            "ban_hours": ban["ban_hours"],
+        })
+    callers.sort(key=lambda x: x["last_offense"], reverse=True)
+    return {"callers": callers, "total": len(callers)}
+
+
+@app.delete("/admin/blacklist/{phone}")
+async def admin_delete_caller(phone: str):
+    data = cr._load()
+    if phone in data.get("callers", {}):
+        del data["callers"][phone]
+        cr._save(data)
+        return {"ok": True}
+    return {"ok": False, "msg": "not found"}
 
 
 
