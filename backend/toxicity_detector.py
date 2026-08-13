@@ -13,13 +13,6 @@ def _load():
     return bad_words, threat_data["patterns"], threat_data.get("high_threat", [])
 
 
-def _is_similar(a: str, b: str) -> bool:
-    wa = set(a.split())
-    wb = set(b.split())
-    if not wa or not wb:
-        return False
-    return len(wa & wb) / max(len(wa), len(wb)) > 0.4
-
 
 def analyze(text: str, history: list[str]) -> dict:
     bad_words, threat_patterns, high_threat = _load()
@@ -49,17 +42,11 @@ def analyze(text: str, history: list[str]) -> dict:
         anger_score += 18
     anger_score = min(100, anger_score)
 
-    # ④ 반복 발화 점수
-    recent = history[-6:] if history else []
-    repeat_count = sum(1 for h in recent if _is_similar(h, text))
-    repetition_score = min(100, repeat_count * 22)
-
-    # ⑤ 키워드 기반 위험도
+    # ④ 키워드 기반 위험도 (욕설 30% → 35%로 재분배)
     keyword_score = round(
-        profanity_score * 0.30
-        + threat_score * 0.35
-        + anger_score * 0.20
-        + repetition_score * 0.15
+        profanity_score * 0.35
+        + threat_score  * 0.40
+        + anger_score   * 0.25
     )
 
     # ⑥ OpenAI Moderation API 결합
@@ -79,11 +66,11 @@ def analyze(text: str, history: list[str]) -> dict:
         "profanity_score":   profanity_score,
         "threat_score":      threat_score,
         "anger_score":       anger_score,
-        "repetition_score":  repetition_score,
+        "repetition_score":  0,
         "matched_bad_words": matched_bad,
         "matched_threats":   matched_threats,
         "level":             _level(risk_score),
-        "repeat_count":      repeat_count,
+        "repeat_count":      0,
         "moderation":        mod_result,
     }
 
