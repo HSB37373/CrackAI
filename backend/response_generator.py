@@ -93,6 +93,16 @@ def _search_rag(question: str, top_k: int = 3, complaint_type: str = "") -> list
     # 카테고리 힌트: complaint_type이 있으면 해당 카테고리 문서를 우선
     hint_cats = _CATEGORY_HINT.get(complaint_type, [])
 
+    # 긴 토큰은 3~4자 서브스트링으로도 쪼개서 추가 검색
+    expanded_tokens = list(tokens)
+    for t in tokens:
+        if len(t) >= 5:
+            for size in (4, 3):
+                for i in range(len(t) - size + 1):
+                    sub = t[i:i+size]
+                    if sub not in expanded_tokens:
+                        expanded_tokens.append(sub)
+
     scored = []
     for doc in docs:
         path    = doc.get("path", "")
@@ -110,16 +120,17 @@ def _search_rag(question: str, top_k: int = 3, complaint_type: str = "") -> list
         if hint_cats and any(_normalize(h) in _normalize(cat) for h in hint_cats):
             score += 4
 
-        for t in tokens:
+        for t in expanded_tokens:
             t_norm = _normalize(t)
-            if not t_norm:
+            if not t_norm or len(t_norm) < 2:
                 continue
+            weight = 1 if len(t) <= 4 else 1   # 서브스트링은 가중치 낮게
             if t_norm in path_norm:
-                score += 3
+                score += 3 * weight
             elif t_norm in title_norm:
-                score += 2
+                score += 2 * weight
             elif t_norm in content_norm:
-                score += 1
+                score += 1 * weight
 
         # 질문 전체 vs 경로
         if len(q_norm) >= 4 and (q_norm in path_norm or path_norm in q_norm):
