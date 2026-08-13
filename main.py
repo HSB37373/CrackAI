@@ -301,26 +301,75 @@ async def admin_faq_stats():
             "faq_count": len(data.get("faq", [])),
             "has_안내": bool(data.get("안내")),
         })
+
+    # 화성소통봇 JSONL 통계
+    jsonl_path = P(__file__).parent / "data" / "hscity_output" / "hscity_rag.jsonl"
+    jsonl_count = 0
+    jsonl_categories: dict[str, int] = {}
+    if jsonl_path.exists():
+        for line in jsonl_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                doc = json.loads(line)
+                jsonl_count += 1
+                cat = doc.get("category", "기타")
+                jsonl_categories[cat] = jsonl_categories.get(cat, 0) + 1
+            except Exception:
+                pass
+
     return {
         "stats": stats,
         "total_faq": sum(s["faq_count"] for s in stats),
-        "raw_api_exists": False,
-        "raw_api_total": 0,
+        "hscity_rag_count": jsonl_count,
+        "hscity_categories": jsonl_categories,
     }
 
 
-@app.post("/admin/fetch")
-async def admin_fetch():
-    """서울 열린데이터광장 4개 API 수집 + FAQ 자동 생성."""
+@app.post("/admin/crawl")
+async def admin_crawl():
+    """화성소통봇 크롤러 실행 (전체 메뉴 수집)."""
     import subprocess, sys
     from pathlib import Path as P
-    script = str(P(__file__).parent / "scripts" / "fetch_and_generate.py")
+    script = str(P(__file__).parent / "scripts" / "crawl_hscity.py")
     result = subprocess.run(
         [sys.executable, script],
+        capture_output=True, text=True, timeout=600,
+        cwd=str(P(__file__).parent),
+    )
+    return {"ok": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr}
+
+
+@app.post("/admin/crawl-test")
+async def admin_crawl_test():
+    """화성소통봇 크롤러 테스트 (세정 메뉴만)."""
+    import subprocess, sys
+    from pathlib import Path as P
+    script = str(P(__file__).parent / "scripts" / "crawl_hscity.py")
+    result = subprocess.run(
+        [sys.executable, script, "--test"],
         capture_output=True, text=True, timeout=120,
         cwd=str(P(__file__).parent),
     )
     return {"ok": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr}
+
+
+@app.get("/admin/rag-docs")
+async def admin_rag_docs(limit: int = 20):
+    """수집된 RAG 문서 미리보기."""
+    from pathlib import Path as P
+    jsonl_path = P(__file__).parent / "data" / "hscity_output" / "hscity_rag.jsonl"
+    if not jsonl_path.exists():
+        return {"docs": [], "total": 0}
+    docs = []
+    for line in jsonl_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            docs.append(json.loads(line))
+        except Exception:
+            pass
+    return {"docs": docs[:limit], "total": len(docs)}
 
 
 @app.post("/admin/reload")

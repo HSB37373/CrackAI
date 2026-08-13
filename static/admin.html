@@ -6,163 +6,134 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Pretendard', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 32px; }
-    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; color: #f8fafc; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; color: #f8fafc; }
     .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; }
-    .card h2 { font-size: 1rem; font-weight: 600; color: #94a3b8; margin-bottom: 16px; letter-spacing: 0.05em; text-transform: uppercase; }
-    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .card h2 { font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 16px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e293b; }
     .stat-row:last-child { border-bottom: none; }
-    .stat-label { font-size: 0.9rem; color: #cbd5e1; }
+    .stat-label { font-size: 0.88rem; color: #cbd5e1; }
     .stat-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
     .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-    .badge.ok { background: #064e3b; color: #6ee7b7; }
-    .badge.warn { background: #78350f; color: #fde68a; }
+    .badge.ok  { background: #064e3b; color: #6ee7b7; }
+    .badge.warn{ background: #78350f; color: #fde68a; }
     .badge.err { background: #7f1d1d; color: #fca5a5; }
-    button { width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .badge.blue{ background: #1e3a5f; color: #7dd3fc; }
+    button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .btn-blue  { background: #2563eb; color: #fff; }
     .btn-green { background: #059669; color: #fff; }
     .btn-gray  { background: #334155; color: #e2e8f0; }
-    button:hover { opacity: 0.85; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    pre { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-size: 0.8rem; color: #a3e635; overflow-x: auto; max-height: 220px; overflow-y: auto; margin-top: 12px; white-space: pre-wrap; word-break: break-all; }
+    .btn-yellow{ background: #b45309; color: #fff; }
+    button:hover   { opacity: 0.85; }
+    button:disabled{ opacity: 0.4; cursor: not-allowed; }
+    pre { background: #0a0f1e; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-size: 0.78rem; color: #a3e635; overflow-x: auto; max-height: 260px; overflow-y: auto; margin-top: 12px; white-space: pre-wrap; word-break: break-all; display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     th { text-align: left; font-size: 0.75rem; color: #64748b; padding: 6px 8px; border-bottom: 1px solid #334155; }
-    td { font-size: 0.85rem; padding: 8px; border-bottom: 1px solid #1e293b; }
-    td:last-child { text-align: right; }
-    .loading { color: #64748b; font-size: 0.85rem; }
-    .section-title { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin: 28px 0 14px; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #334155; }
-    .tab-btn { background: none; border: none; width: auto; padding: 10px 22px; margin: 0; color: #94a3b8; font-size: 0.95rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; border-radius: 0; transition: 0.15s; }
-    .tab-btn:hover { color: #e2e8f0; opacity: 1; }
-    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .bl-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    .bl-table th { text-align: left; font-size: 0.75rem; color: #64748b; padding: 8px 10px; border-bottom: 1px solid #334155; }
-    .bl-table td { font-size: 0.85rem; padding: 10px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
-    .ban-active { color: #f87171; font-weight: 600; }
-    .ban-none   { color: #4ade80; }
-    .del-btn { background: #7f1d1d; color: #fca5a5; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; width: auto; margin: 0; }
-    .del-btn:hover { background: #991b1b; opacity: 1; }
-    .offense-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
-    .off-0 { background: #064e3b; color: #6ee7b7; }
-    .off-1 { background: #78350f; color: #fde68a; }
-    .off-2 { background: #7c2d12; color: #fdba74; }
-    .off-3 { background: #7f1d1d; color: #fca5a5; }
-    .empty-msg { text-align: center; color: #475569; padding: 32px; font-size: 0.9rem; }
+    td { font-size: 0.83rem; padding: 8px; border-bottom: 1px solid #1a2233; vertical-align: top; }
+    .loading { color: #64748b; font-size: 0.85rem; text-align: center; padding: 12px; }
+    .section-title { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 28px 0 12px; }
+    .progress-bar { height: 6px; background: #1e293b; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #38bdf8); border-radius: 99px; transition: width 0.4s; }
+    .tag { display: inline-block; background: #1e3a5f; color: #7dd3fc; border-radius: 4px; padding: 1px 6px; font-size: 0.73rem; margin-right: 3px; }
+    .msg-preview { color: #94a3b8; font-size: 0.8rem; max-height: 3.2em; overflow: hidden; line-height: 1.6; }
   </style>
 </head>
 <body>
   <h1>관리자 대시보드</h1>
-  <p class="sub">민원 AI 보호 시스템 관리</p>
+  <p class="sub">화성소통봇 데이터 수집 · RAG 지식베이스 관리</p>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('faq')">📋 FAQ 관리</button>
-    <button class="tab-btn" onclick="switchTab('blacklist')">🚫 블랙리스트</button>
-  </div>
-
-  <!-- ■ FAQ 탭 -->
-  <div class="tab-panel active" id="tab-faq">
   <div class="grid">
-    <!-- FAQ 통계 카드 -->
+
+    <!-- 현황 카드 -->
     <div class="card">
-      <h2>FAQ 데이터 현황</h2>
+      <h2>데이터 현황</h2>
       <div id="faq-stats"><p class="loading">불러오는 중...</p></div>
       <button class="btn-gray" onclick="loadStats()">새로고침</button>
     </div>
 
-    <!-- API 수집 카드 -->
+    <!-- 크롤러 실행 카드 -->
     <div class="card">
-      <h2>API 데이터 수집 · FAQ 자동 생성</h2>
+      <h2>화성소통봇 크롤러</h2>
       <div class="stat-row">
         <span class="stat-label">데이터 출처</span>
-        <span class="badge ok">서울 열린데이터광장 SearchFAQService</span>
+        <span class="badge blue">화성소통봇 iChatResponse.jsp</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">총 수집 가능</span>
-        <span class="stat-value">109건</span>
+        <span class="stat-label">대상 최상위 메뉴</span>
+        <span class="stat-value">9개</span>
       </div>
-      <button class="btn-blue" id="btn-fetch" onclick="runFetch()" style="margin-top:10px;">
-        ① API 수집 + FAQ 자동 생성 (원클릭)
+      <div class="stat-row">
+        <span class="stat-label">수집 방식</span>
+        <span class="stat-label">DFS 재귀 탐색 · hidden_query 기반</span>
+      </div>
+      <button class="btn-green" id="btn-test" onclick="runCrawl('test')">
+        ① 테스트 (세정만, ~2분)
       </button>
-      <button class="btn-gray" id="btn-reload" onclick="runReload()">② 서버 재로드</button>
-      <pre id="log-output" style="display:none"></pre>
+      <button class="btn-blue" id="btn-full" onclick="runCrawl('full')">
+        ② 전체 크롤링 (9개 메뉴, ~10분)
+      </button>
+      <button class="btn-gray" onclick="runReload()">③ 통계 재로드</button>
+      <pre id="log-output"></pre>
     </div>
+
   </div>
 
-  <p class="section-title">민원 유형별 FAQ 상세</p>
+  <p class="section-title">민원 FAQ 카테고리 (civil_service_faq.json)</p>
   <div class="card">
     <table>
       <thead>
         <tr>
-          <th>유형</th>
-          <th>민원명</th>
-          <th>담당부서</th>
-          <th>FAQ 수</th>
-          <th>안내문</th>
+          <th>유형</th><th>민원명</th><th>담당부서</th><th>FAQ 수</th><th>안내문</th>
         </tr>
       </thead>
       <tbody id="faq-table"><tr><td colspan="5" class="loading">불러오는 중...</td></tr></tbody>
     </table>
   </div>
 
-  <p class="section-title">원본 API 데이터 미리보기</p>
+  <p class="section-title">화성소통봇 RAG 문서 미리보기</p>
   <div class="card">
-    <button class="btn-gray" onclick="loadRaw()">원본 데이터 보기 (최대 20건)</button>
-    <pre id="raw-preview" style="display:none"></pre>
-  </div>
-  </div><!-- end tab-faq -->
-
-  <!-- ■ 블랙리스트 탭 -->
-  <div class="tab-panel" id="tab-blacklist">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <span style="color:#94a3b8; font-size:0.9rem;">최근 6개월 내 악성 민원 이력 기준 · AI 전환 시 자동 등록</span>
-      <button class="btn-gray" style="width:auto; padding:8px 18px;" onclick="loadBlacklist()">🔄 새로고침</button>
+    <div id="rag-stats" class="stat-row">
+      <span class="stat-label">수집된 RAG 문서</span>
+      <span class="stat-value" id="rag-count">-</span>
     </div>
-    <div class="card" style="padding:0; overflow:hidden;">
-      <table class="bl-table">
-        <thead>
-          <tr>
-            <th>이름</th>
-            <th>전화번호</th>
-            <th>최근 6개월 전과</th>
-            <th>누적 전과</th>
-            <th>마지막 발생일</th>
-            <th>통화 제한 상태</th>
-            <th>제한 만료</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="bl-table-body">
-          <tr><td colspan="8" class="empty-msg">불러오는 중...</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div id="bl-summary" style="margin-top:12px; color:#64748b; font-size:0.82rem;"></div>
+    <button class="btn-gray" onclick="loadRagDocs()">RAG 문서 보기 (최대 20건)</button>
+    <div id="rag-docs" style="margin-top:12px;"></div>
   </div>
 
 <script>
 const log = (msg, ok) => {
   const el = document.getElementById('log-output');
   el.style.display = 'block';
-  el.textContent += (ok === false ? '❌ ' : ok === true ? '✅ ' : '') + msg + '\n';
+  const prefix = ok === true ? '✅ ' : ok === false ? '❌ ' : '';
+  el.textContent += prefix + msg + '\n';
+  el.scrollTop = el.scrollHeight;
 };
 
 async function loadStats() {
   const res = await fetch('/admin/faq-stats').then(r => r.json());
 
-  // 요약 카드
-  document.getElementById('faq-stats').innerHTML = `
-    <div class="stat-row"><span class="stat-label">전체 FAQ 항목 수</span><span class="stat-value">${res.total_faq}개</span></div>
-    <div class="stat-row"><span class="stat-label">원본 API 데이터</span>
-      <span class="badge ${res.raw_api_exists ? 'ok' : 'err'}">${res.raw_api_exists ? res.raw_api_total + '건' : '없음'}</span>
-    </div>
-  `;
+  // 현황 카드
+  const ragCount = res.hscity_rag_count || 0;
+  const cats = res.hscity_categories || {};
+  const catHtml = Object.entries(cats).map(([k, v]) =>
+    `<span class="tag">${k} ${v}</span>`).join('');
 
-  // 테이블
-  const tbody = document.getElementById('faq-table');
-  tbody.innerHTML = res.stats.map(s => `
+  document.getElementById('faq-stats').innerHTML = `
+    <div class="stat-row">
+      <span class="stat-label">FAQ 항목 (civil_service_faq)</span>
+      <span class="stat-value">${res.total_faq}개</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">RAG 문서 (화성소통봇)</span>
+      <span class="stat-value ${ragCount > 0 ? '' : 'badge warn'}">${ragCount > 0 ? ragCount + '개' : '없음 (크롤링 필요)'}</span>
+    </div>
+    ${ragCount > 0 ? `<div style="padding:10px 0; border-bottom:1px solid #1e293b;">${catHtml}</div>` : ''}
+  `;
+  document.getElementById('rag-count').textContent = ragCount > 0 ? ragCount + '개' : '없음';
+
+  // FAQ 테이블
+  document.getElementById('faq-table').innerHTML = res.stats.map(s => `
     <tr>
       <td>${s.category}</td>
       <td>${s.민원명}</td>
@@ -173,103 +144,69 @@ async function loadStats() {
   `).join('');
 }
 
-async function runFetch() {
-  const btn = document.getElementById('btn-fetch');
-  btn.disabled = true; btn.textContent = '수집 중...';
+async function runCrawl(mode) {
+  const testBtn = document.getElementById('btn-test');
+  const fullBtn = document.getElementById('btn-full');
+  testBtn.disabled = true; fullBtn.disabled = true;
+
+  const endpoint = mode === 'test' ? '/admin/crawl-test' : '/admin/crawl';
+  const label = mode === 'test' ? '세정 테스트' : '전체 크롤링';
+
   document.getElementById('log-output').textContent = '';
-  log('서울 열린데이터광장 FAQ 수집 + 자동 생성 시작...');
-  const res = await fetch('/admin/fetch', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
-  }).then(r => r.json());
-  log(res.stdout || '(출력 없음)', res.ok);
-  if (res.stderr) log('STDERR: ' + res.stderr, false);
-  btn.disabled = false; btn.textContent = '① API 수집 + FAQ 자동 생성 (원클릭)';
-  loadStats();
-}
+  log(`화성소통봇 ${label} 시작...`);
+  log(mode === 'full' ? '전체 수집은 10분 이상 걸릴 수 있습니다. 잠시 기다려주세요.' : '');
 
-async function runGenerate() {
-  const btn = document.getElementById('btn-gen');
-  btn.disabled = true; btn.textContent = '변환 중...';
-  log('FAQ 변환 시작...');
-  const res = await fetch('/admin/generate', { method: 'POST' }).then(r => r.json());
-  log(res.stdout || '(출력 없음)', res.ok);
-  if (res.stderr) log('STDERR: ' + res.stderr, false);
-  btn.disabled = false; btn.textContent = '② FAQ 변환 실행';
-  loadStats();
-}
-
-async function runReload() {
-  log('서버 FAQ 재로드...');
-  await fetch('/admin/reload', { method: 'POST' });
-  log('재로드 완료', true);
-  loadStats();
-}
-
-async function loadRaw() {
-  const res = await fetch('/admin/raw').then(r => r.json());
-  const el = document.getElementById('raw-preview');
-  el.style.display = 'block';
-  el.textContent = JSON.stringify(res, null, 2);
-}
-
-loadStats();
-
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['faq','blacklist'][i] === name);
-  });
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'blacklist') loadBlacklist();
-}
-
-async function loadBlacklist() {
-  const tbody = document.getElementById('bl-table-body');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">불러오는 중...</td></tr>';
   try {
-    const res = await fetch('/admin/blacklist').then(r => r.json());
-    if (!res.callers.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">등록된 블랙리스트가 없습니다.</td></tr>';
-      document.getElementById('bl-summary').textContent = '';
-      return;
-    }
-    tbody.innerHTML = res.callers.map(c => {
-      const offCls = c.recent_offenses >= 3 ? 'off-3' : c.recent_offenses === 2 ? 'off-2' : c.recent_offenses === 1 ? 'off-1' : 'off-0';
-      const banText = c.is_banned
-        ? `<span class="ban-active">🚫 제한 중</span>`
-        : `<span class="ban-none">✅ 정상</span>`;
-      const expires = c.ban_expires_at
-        ? c.ban_expires_at.replace('T', ' ').slice(0, 16)
-        : '-';
-      const lastDate = c.last_offense
-        ? c.last_offense.replace('T', ' ').slice(0, 16)
-        : '-';
-      return `<tr>
-        <td>${c.name}</td>
-        <td style="font-family:monospace">${c.phone}</td>
-        <td><span class="offense-badge ${offCls}">${c.recent_offenses}회</span></td>
-        <td style="color:#64748b">${c.total_offenses}회</td>
-        <td style="color:#94a3b8">${lastDate}</td>
-        <td>${banText}</td>
-        <td style="color:#94a3b8; font-size:0.8rem">${expires}</td>
-        <td><button class="del-btn" onclick="deleteCaller('${c.phone}')">삭제</button></td>
-      </tr>`;
-    }).join('');
-    document.getElementById('bl-summary').textContent =
-      `총 ${res.total}명 등록 · 제한 중 ${res.callers.filter(c => c.is_banned).length}명`;
-  } catch {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">조회 실패 — 서버를 확인해주세요.</td></tr>';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }).then(r => r.json());
+
+    if (res.stdout) log(res.stdout, res.ok);
+    if (res.stderr) log('STDERR:\n' + res.stderr, false);
+    if (!res.ok) log('크롤링 실패', false);
+    else { log(`${label} 완료`, true); loadStats(); }
+  } catch(e) {
+    log('요청 실패: ' + e, false);
+  } finally {
+    testBtn.disabled = false; fullBtn.disabled = false;
   }
 }
 
-async function deleteCaller(phone) {
-  if (!confirm(`${phone} 번호의 블랙리스트 기록을 삭제하시겠습니까?`)) return;
-  const res = await fetch(`/admin/blacklist/${encodeURIComponent(phone)}`, { method: 'DELETE' }).then(r => r.json());
-  if (res.ok) loadBlacklist();
-  else alert('삭제 실패');
+async function runReload() {
+  log('통계 재로드...');
+  await fetch('/admin/reload', { method: 'POST' });
+  loadStats();
+  log('완료', true);
 }
+
+async function loadRagDocs() {
+  const res = await fetch('/admin/rag-docs?limit=20').then(r => r.json());
+  const el = document.getElementById('rag-docs');
+  if (!res.docs || res.docs.length === 0) {
+    el.innerHTML = '<p class="loading">RAG 문서가 없습니다. 먼저 크롤링을 실행하세요.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <p style="color:#64748b;font-size:0.8rem;margin-bottom:8px;">전체 ${res.total}개 중 ${res.docs.length}개 표시</p>
+    <table>
+      <thead><tr><th>ID</th><th>카테고리</th><th>경로</th><th>내용 미리보기</th></tr></thead>
+      <tbody>
+        ${res.docs.map(d => `
+          <tr>
+            <td><code style="font-size:0.75rem;color:#94a3b8">${d.id}</code></td>
+            <td><span class="tag">${d.category}</span></td>
+            <td style="color:#94a3b8;font-size:0.78rem;max-width:180px;word-break:break-word">${d.path}</td>
+            <td><div class="msg-preview">${(d.content || '').replace(/\n/g, ' ').substring(0, 120)}...</div></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+loadStats();
 </script>
 </body>
 </html>
