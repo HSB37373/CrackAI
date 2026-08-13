@@ -145,6 +145,37 @@ def _search_rag(question: str, top_k: int = 3, complaint_type: str = "") -> list
     return [d for s, d in scored[:top_k] if s >= min_score]
 
 
+def _tts_clean(text: str) -> str:
+    """TTS 음성 출력에 적합하게 텍스트 정제."""
+    import html as html_mod
+    # HTML 엔티티 디코딩
+    text = html_mod.unescape(text or "")
+    # HTML 태그 제거
+    text = re.sub(r"<[^>]+>", " ", text)
+    # URL 제거 (http:// https:// www. 포함)
+    text = re.sub(r"https?://\S+", "", text)
+    text = re.sub(r"www\.\S+", "", text)
+    # 이메일 제거
+    text = re.sub(r"\S+@\S+", "", text)
+    # 이모지 전체 제거 (유니코드 이모지 범위)
+    text = re.sub(r"[\U00010000-\U0010ffff]", "", text)
+    text = re.sub(r"[🔹💡👉🏠📌✅❌🙂😊😥🗑️]", "", text)
+    # 표 그리기 문자 제거
+    text = re.sub(r"[┗┃┏┓┛┠┤├┼─│]", "", text)
+    # 경로 구분자 > 제거
+    text = re.sub(r"\s*>\s*", " ", text)
+    # 슬래시를 "또는"으로
+    text = re.sub(r"\s*/\s*", " 또는 ", text)
+    # 기관정보 태그 제거
+    text = re.sub(r"<[^>]*기관정보[^>]*>", "", text)
+    # 점 목록 기호 정리
+    text = re.sub(r"[•·◆◇▶▷●○■□]", "", text)
+    # 연속 공백·줄바꿈 정리
+    text = re.sub(r"\n{2,}", "\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    return text.strip()
+
+
 def _format_rag_answer(docs: list[dict]) -> str:
     """RAG 문서를 음성 친화적 답변으로 변환."""
     if not docs:
@@ -154,17 +185,11 @@ def _format_rag_answer(docs: list[dict]) -> str:
     if not content:
         return ""
 
-    # 이모지, 특수문자 정리 (음성 TTS에 적합하게)
-    content = re.sub(r"[🔹💡👉🏠📌✅❌🙂]", "", content)
-    content = re.sub(r"┗|┃|┏|┓|┗|┛", "", content)
-    content = re.sub(r"\n{2,}", "\n", content).strip()
+    content = _tts_clean(content)
+    title = _tts_clean(best.get("title", ""))
 
-    path = best.get("path", "")
-    category = best.get("category", "")
-
-    lines = [f"{path} 안내입니다." if path else ""]
-    lines.append(content[:400])
-    return "\n".join(l for l in lines if l).strip()
+    intro = f"{title} 안내입니다. " if title else ""
+    return (intro + content)[:500]
 
 
 # ── 공개 API ──────────────────────────────────────────────────────────────────
