@@ -54,7 +54,7 @@ def get_session(session_id: str) -> dict:
             "caller_phone": "",
             "caller_offense_count": 0,
             "profanity_warning_count": 0,
-            "ai_threshold": 2,
+            "ai_threshold": 3,
             "offense_recorded": False,
         }
     return sessions[session_id]
