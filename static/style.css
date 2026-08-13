@@ -660,6 +660,16 @@ body {
   color: var(--normal);
 }
 
+.routing-source-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.03em;
+}
+.routing-source-badge.src-gpt  { background: rgba(168,85,247,0.25); color: #c084fc; }
+.routing-source-badge.src-rule { background: rgba(100,116,139,0.25); color: #94a3b8; }
+
 .routing-brief-body {
   padding: 10px 14px 6px;
   display: flex;

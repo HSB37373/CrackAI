@@ -336,6 +336,15 @@ async function triggerRouting(text, complaintType) {
   $('routing-badge').textContent = '분석 완료';
   $('routing-badge').classList.add('done');
 
+  // GPT / 룰 기반 출처 배지
+  const srcBadge = $('routing-source-badge');
+  if (srcBadge) {
+    const isGpt = routeData.source === 'gpt';
+    srcBadge.textContent = isGpt ? 'GPT' : '규칙 기반';
+    srcBadge.className = 'routing-source-badge ' + (isGpt ? 'src-gpt' : 'src-rule');
+    srcBadge.classList.remove('hidden');
+  }
+
   // TTS: 담당 부서 연결 안내
   const dept = routeData.department || '담당';
   const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
@@ -741,6 +750,8 @@ function resetRoutingBrief() {
   brief.classList.add('hidden');
   $('routing-badge').textContent = '분석 중';
   $('routing-badge').classList.remove('done');
+  const srcBadge = $('routing-source-badge');
+  if (srcBadge) { srcBadge.textContent = ''; srcBadge.classList.add('hidden'); }
   ['brief-type','brief-sub-type','brief-location','brief-urgency','brief-dept','brief-summary']
     .forEach(id => { const el = $(id); if (el) el.textContent = '-'; });
   $('routing-connecting').classList.add('hidden');

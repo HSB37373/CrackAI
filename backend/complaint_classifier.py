@@ -1,4 +1,8 @@
+import json
+import os
 import re
+import urllib.error
+import urllib.request
 
 KEYWORDS: dict[str, list[str]] = {
     "불법주정차": [
@@ -35,32 +39,32 @@ DEPT_MAP: dict[str, str] = {
 SUB_TYPE_MAP: dict[str, list[tuple[str, list[str]]]] = {
     "불법주정차": [
         ("어린이보호구역 불법주정차", ["어린이", "어린이집", "학교", "스쿨존", "어린이보호"]),
-        ("과태료 이의신청", ["이의", "이의신청", "취소", "부당", "억울"]),
-        ("반복 불법주정차 신고", ["반복", "매일", "항상", "계속", "자꾸", "또", "밤마다"]),
-        ("주차단속 요청", ["단속", "딱지", "신고"]),
-        ("주차위반 과태료 문의", ["과태료", "벌금", "얼마"]),
+        ("과태료 이의신청",           ["이의", "이의신청", "취소", "부당", "억울"]),
+        ("반복 불법주정차 신고",       ["반복", "매일", "항상", "계속", "자꾸", "또", "밤마다"]),
+        ("주차단속 요청",             ["단속", "딱지", "신고"]),
+        ("주차위반 과태료 문의",       ["과태료", "벌금", "얼마"]),
     ],
     "쓰레기": [
-        ("어린이보호구역 인근 투기", ["어린이", "어린이집", "학교"]),
-        ("무단투기 신고", ["신고", "투기", "버린", "불법"]),
-        ("분리수거 문의", ["분리수거", "재활용", "음식물"]),
-        ("쓰레기 수거 요청", ["수거", "치워", "청소"]),
+        ("어린이보호구역 인근 투기",   ["어린이", "어린이집", "학교"]),
+        ("무단투기 신고",             ["신고", "투기", "버린", "불법"]),
+        ("분리수거 문의",             ["분리수거", "재활용", "음식물"]),
+        ("쓰레기 수거 요청",          ["수거", "치워", "청소"]),
     ],
     "소음": [
-        ("층간소음 민원", ["층간", "위층", "아래층", "윗집", "아랫집"]),
-        ("공사장 소음 신고", ["공사", "공사장", "공사 소리"]),
-        ("생활소음 민원", ["소음", "시끄럽", "소리"]),
+        ("층간소음 민원",             ["층간", "위층", "아래층", "윗집", "아랫집"]),
+        ("공사장 소음 신고",          ["공사", "공사장", "공사 소리"]),
+        ("생활소음 민원",             ["소음", "시끄럽", "소리"]),
     ],
     "주민등록": [
-        ("주민등록등본 발급", ["등본"]),
-        ("주민등록초본 발급", ["초본"]),
-        ("전입신고", ["이사", "전입", "이사 왔"]),
-        ("전출신고", ["전출", "이사 가"]),
+        ("주민등록등본 발급",         ["등본"]),
+        ("주민등록초본 발급",         ["초본"]),
+        ("전입신고",                  ["이사", "전입", "이사 왔"]),
+        ("전출신고",                  ["전출", "이사 가"]),
     ],
     "여권": [
-        ("여권 신규 발급", ["신규", "처음", "새로"]),
-        ("여권 재발급", ["재발급", "갱신", "만료", "기간 지났", "기간이 지났"]),
-        ("여권 발급 문의", ["발급", "방법", "어떻게"]),
+        ("여권 신규 발급",            ["신규", "처음", "새로"]),
+        ("여권 재발급",               ["재발급", "갱신", "만료", "기간 지났", "기간이 지났"]),
+        ("여권 발급 문의",            ["발급", "방법", "어떻게"]),
     ],
 }
 
@@ -83,6 +87,29 @@ _SUMMARY_TEMPLATES: dict[str, str] = {
     "기타":       "민원 내용이 접수됨. 담당 부서 배정 필요.",
 }
 
+_GPT_SYSTEM = """당신은 화성시청 민원 AI 라우팅 시스템입니다.
+시민의 민원 발화를 분석하고 아래 JSON 형식으로만 응답하세요.
+
+민원 유형과 담당 부서:
+- 불법주정차 → 교통행정과
+- 주민등록    → 민원여권과
+- 여권        → 민원여권과
+- 쓰레기      → 환경위생과
+- 소음        → 환경위생과
+- 기타        → 민원안내실
+
+응답 JSON 필드:
+{
+  "complaint_type": "위 유형 중 하나",
+  "sub_type": "세부 민원 유형 (예: 어린이보호구역 불법주정차, 과태료 이의신청)",
+  "location": "언급된 지역명 (없으면 빈 문자열)",
+  "urgency": "높음 | 중간 | 보통",
+  "department": "담당 부서명",
+  "summary": "상담원에게 전달할 민원 요약 1~2문장 (한국어)"
+}"""
+
+
+# ── 공개 API ──────────────────────────────────────────────────────────────
 
 def classify(text: str) -> str:
     scores: dict[str, int] = {}
@@ -123,22 +150,73 @@ def get_urgency(text: str) -> str:
 
 
 def build_routing_brief(text: str) -> dict:
-    category = classify(text)
-    sub_type = get_sub_type(text, category)
-    location = extract_location(text)
-    urgency = get_urgency(text)
+    """GPT 라우팅(OPENAI_API_KEY 있을 때) → 룰 기반 폴백."""
+    if os.environ.get("OPENAI_API_KEY"):
+        result = _gpt_route(text)
+        if result:
+            result["source"] = "gpt"
+            return result
+
+    return _rule_route(text)
+
+
+# ── 내부 구현 ─────────────────────────────────────────────────────────────
+
+def _gpt_route(text: str) -> dict | None:
+    """gpt-4o-mini로 민원 라우팅 브리핑 생성. 실패 시 None 반환."""
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    payload = json.dumps({
+        "model": "gpt-4o-mini",
+        "response_format": {"type": "json_object"},
+        "temperature": 0,
+        "messages": [
+            {"role": "system", "content": _GPT_SYSTEM},
+            {"role": "user",   "content": f"시민 발화: {text}"},
+        ],
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=8) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        content = data["choices"][0]["message"]["content"]
+        result = json.loads(content)
+        # 필수 필드 검증
+        for field in ("complaint_type", "sub_type", "location", "urgency", "department", "summary"):
+            if field not in result:
+                return None
+        return result
+    except Exception:
+        return None
+
+
+def _rule_route(text: str) -> dict:
+    """키워드 기반 폴백 라우팅."""
+    category   = classify(text)
+    sub_type   = get_sub_type(text, category)
+    location   = extract_location(text)
+    urgency    = get_urgency(text)
     department = get_department(category)
 
     location_str = f"{location} " if location else ""
-    urgency_str = "반복 발생 중. " if urgency == "중간" else ("고위험 상황 포함. " if urgency == "높음" else "")
-    template = _SUMMARY_TEMPLATES.get(category, _SUMMARY_TEMPLATES["기타"])
-    summary = template.format(location=location_str, urgency_str=urgency_str)
+    urgency_str  = "반복 발생 중. " if urgency == "중간" else ("고위험 상황 포함. " if urgency == "높음" else "")
+    template     = _SUMMARY_TEMPLATES.get(category, _SUMMARY_TEMPLATES["기타"])
+    summary      = template.format(location=location_str, urgency_str=urgency_str)
 
     return {
         "complaint_type": category,
-        "sub_type": sub_type,
-        "location": location,
-        "urgency": urgency,
-        "department": department,
-        "summary": summary,
+        "sub_type":       sub_type,
+        "location":       location,
+        "urgency":        urgency,
+        "department":     department,
+        "summary":        summary,
+        "source":         "rule",
     }
