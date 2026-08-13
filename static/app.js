@@ -25,6 +25,10 @@ let callerOffenseCount = 0;
 let aiThreshold = 3;
 let banTimerInterval = null;
 
+// AI 라우팅 단계
+let routingPhase = true;   // 첫 발화 전까지 true
+let routingDone  = false;  // 라우팅 브리핑 표시 완료 여부
+
 // ── DOM 참조 ──────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
@@ -188,11 +192,12 @@ function startCall() {
   isCallActive = true;
   clearChatArea();
   resetStats();
+  resetRoutingBrief();
 
   micBtn.classList.add('active');
   micLabel.textContent = '통화 종료';
   callIndicator.classList.add('active');
-  setCallStatus('통화 중', 'active');
+  setCallStatus('AI 민원 분석 중', 'normal');
 
   callSeconds = 0;
   callTimer = setInterval(() => {
@@ -268,6 +273,12 @@ async function processUtterance(text) {
   lastComplaintType = analysis.complaint_type || '기타';
   lastDept = analysis.department || '-';
 
+  // 라우팅 단계: 민원 유형이 분류되면 브리핑 카드 표시 후 상담원 연결
+  if (routingPhase && !routingDone && lastComplaintType !== '기타') {
+    routingDone = true;
+    await triggerRouting(text, lastComplaintType);
+  }
+
   // AI 전환 여부 결정
   const justActivated = !aiModeActive && analysis.ai_activated;
   if (justActivated) {
@@ -283,6 +294,70 @@ async function processUtterance(text) {
   if (!justActivated && (aiModeActive || analysis.ai_activated)) {
     await generateAIResponse(text, lastComplaintType);
   }
+}
+
+// ── AI 라우팅: 민원 분류 → 브리핑 카드 → 상담원 연결 ──────────────────────
+async function triggerRouting(text, complaintType) {
+  // 브리핑 카드 표시 (로딩 상태)
+  const brief = $('routing-brief');
+  brief.classList.remove('hidden');
+
+  let routeData = {
+    complaint_type: complaintType,
+    sub_type: complaintType + ' 일반 문의',
+    location: '',
+    urgency: '보통',
+    department: lastDept,
+    summary: '민원 내용이 접수됨.',
+  };
+
+  try {
+    const res = await fetch(`${API}/route`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, session_id: SESSION_ID }),
+    });
+    routeData = await res.json();
+  } catch {}
+
+  // 브리핑 카드 데이터 채우기
+  $('brief-type').textContent = routeData.complaint_type || '-';
+  $('brief-sub-type').textContent = routeData.sub_type || '-';
+  $('brief-location').textContent = routeData.location || '화성시';
+  $('brief-dept').textContent = routeData.department || '-';
+  $('brief-summary').textContent = routeData.summary || '-';
+
+  const urg = $('brief-urgency');
+  const urgLevel = routeData.urgency || '보통';
+  urg.textContent = urgLevel === '높음' ? '높음 ⚠️' : urgLevel === '중간' ? '중간' : '보통';
+  urg.className = 'brief-val ' +
+    (urgLevel === '높음' ? 'brief-urgency-high' : urgLevel === '중간' ? 'brief-urgency-mid' : 'brief-urgency-low');
+
+  $('routing-badge').textContent = '분석 완료';
+  $('routing-badge').classList.add('done');
+
+  // TTS: 담당 부서 연결 안내
+  const dept = routeData.department || '담당';
+  const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
+  addChatMsg('ai', '🔔 AI 안내', connMsg, '');
+  speak(connMsg);
+
+  // 연결 중 애니메이션
+  await sleep(400);
+  $('routing-connecting').classList.remove('hidden');
+  $('routing-dept-label').textContent = `${dept}에 연결 중...`;
+  setCallStatus('연결 중...', 'normal');
+
+  await sleep(2200);
+
+  // 연결 완료
+  $('routing-connecting').classList.add('hidden');
+  $('routing-connected').classList.remove('hidden');
+  setCallStatus('모니터링 중', 'active');
+  addChatMsg('ai', '🔔 시스템', `✅ ${dept} 상담원에게 연결되었습니다. 통화 모니터링을 시작합니다.`, '');
+
+  // 라우팅 단계 종료 → 악성 민원 모니터링 단계로 전환
+  routingPhase = false;
 }
 
 // ── AI 전환 ──────────────────────────────────────────────────────────────
@@ -562,12 +637,14 @@ async function generateSummary() {
 
 // ── 데모 시나리오 ─────────────────────────────────────────────────────────
 const DEMO_SCRIPT = [
-  { delay: 0,    text: '여보세요, 주차 과태료 이의신청 하려고 하는데요.' },
-  { delay: 3000, text: '어디로 신청해야 하나요?' },
-  { delay: 6000, text: '담당자 바꿔요! 이게 뭐야 진짜.' },
-  { delay: 9000, text: '야, 이따위로 일할 거야? 당장 담당자 나오라고!' },
-  { delay: 12000, text: '미치겠네 진짜, 가만 안 둬!' },
-  { delay: 15500, text: '과태료 취소하려면 서류가 뭐가 필요해요?' },
+  // ① 라우팅 단계: 자연어 발화 → AI 분류 → 상담원 연결
+  { delay: 0,    text: '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.' },
+  // ② 라우팅 완료 후 모니터링 단계 (약 4초 소요)
+  { delay: 5500, text: '서류는 뭐가 필요한가요?' },
+  { delay: 8500, text: '왜 이렇게 복잡해요? 담당자 바꿔요!' },
+  { delay: 11500, text: '야, 이따위로 일할 거야? 당장 책임자 나오라고!' },
+  { delay: 14500, text: '미치겠네 진짜, 가만 안 둬!' },
+  { delay: 18000, text: '이의신청 서류 제출 기한이 언제까지예요?' },
 ];
 
 let demoRunning = false;
@@ -654,6 +731,20 @@ function resetStats() {
   summaryBtn.disabled = true;
   showBadge('normal');
   updateSystemBadge('normal-dot', '상담 중');
+}
+
+function resetRoutingBrief() {
+  routingPhase = true;
+  routingDone  = false;
+  const brief = $('routing-brief');
+  if (!brief) return;
+  brief.classList.add('hidden');
+  $('routing-badge').textContent = '분석 중';
+  $('routing-badge').classList.remove('done');
+  ['brief-type','brief-sub-type','brief-location','brief-urgency','brief-dept','brief-summary']
+    .forEach(id => { const el = $(id); if (el) el.textContent = '-'; });
+  $('routing-connecting').classList.add('hidden');
+  $('routing-connected').classList.add('hidden');
 }
 
 function levelColor(level) {

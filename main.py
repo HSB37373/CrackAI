@@ -252,18 +252,26 @@ async def get_faq():
     return json.loads(FAQ_PATH.read_text(encoding="utf-8"))
 
 
+class RouteRequest(BaseModel):
+    text: str
+    session_id: str = "default"
+
+
+@app.post("/route")
+async def route_call(req: RouteRequest):
+    """자연어 민원 텍스트에서 라우팅 브리핑 추출."""
+    brief = cc.build_routing_brief(req.text)
+    return brief
+
+
 # ---------------------------------------------------------------------------
-# 관리자 API
+# 페이지 라우트
 # ---------------------------------------------------------------------------
 
 @app.get("/chatbot")
 async def chatbot_page():
     return FileResponse("static/chatbot.html")
 
-
-# ---------------------------------------------------------------------------
-# 관리자 API
-# ---------------------------------------------------------------------------
 
 @app.get("/admin")
 async def admin_page():

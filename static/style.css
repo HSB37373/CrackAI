@@ -617,3 +617,143 @@ body {
 .ban-status.lifted .ban-timer { color: var(--normal); }
 
 .hidden { display: none !important; }
+
+/* ── AI 라우팅 브리핑 카드 ── */
+@keyframes briefSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.routing-brief {
+  background: linear-gradient(135deg, #0d1f3c 0%, #161b22 100%);
+  border: 1px solid #1d4ed8;
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: briefSlideIn 0.4s ease;
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.15), 0 4px 24px rgba(29,78,216,0.18);
+}
+
+.routing-brief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(29,78,216,0.18);
+  font-size: 12px;
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(29,78,216,0.3);
+}
+
+.routing-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(29,78,216,0.3);
+  color: #93c5fd;
+  letter-spacing: 0.03em;
+}
+.routing-badge.done {
+  background: rgba(63,185,80,0.2);
+  color: var(--normal);
+}
+
+.routing-brief-body {
+  padding: 10px 14px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.brief-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.brief-key {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 60px;
+}
+
+.brief-val {
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+}
+
+.brief-val.brief-sub {
+  color: #93c5fd;
+  font-size: 11px;
+}
+
+.brief-val.brief-dept {
+  color: var(--normal);
+}
+
+.brief-urgency-high  { color: var(--danger) !important; }
+.brief-urgency-mid   { color: var(--caution) !important; }
+.brief-urgency-low   { color: var(--normal) !important; }
+
+.brief-summary-box {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.brief-summary-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+
+.brief-summary-text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* 연결 중 애니메이션 */
+@keyframes connPulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.1); }
+}
+
+.routing-connecting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #93c5fd;
+  border-top: 1px solid rgba(29,78,216,0.2);
+}
+
+.conn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  display: inline-block;
+  animation: connPulse 1.4s ease-in-out infinite;
+}
+.conn-dot:nth-child(2) { animation-delay: 0.2s; }
+.conn-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.routing-connected {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--normal);
+  border-top: 1px solid rgba(63,185,80,0.2);
+  background: rgba(63,185,80,0.06);
+}
