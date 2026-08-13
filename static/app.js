@@ -246,7 +246,9 @@ function startCall() {
     callTimerEl.textContent = `${m}:${s}`;
   }, 1000);
 
-  // 통화 시작 안내 멘트 — STT는 TTS 종료 후 자동 재개(suppressSTT 흐름)
+  // STT를 먼저 시작 — speak()가 suppressSTT로 결과를 차단하고, TTS 종료 후 자동 재개
+  if (recognition) { try { recognition.start(); } catch {} }
+
   const greeting = '안녕하세요. 화성시 민원 상담 서비스입니다. 거주하시는 지역과 불편하신 사항을 말씀해 주시면 담당 부서로 바로 연결해 드리겠습니다.';
   addChatMsg('ai', '🔔 시스템', greeting, '');
   speak(greeting);
@@ -409,17 +411,15 @@ async function triggerRouting(text, complaintType) {
   // TTS: 녹음·폭언 안내
   const legalMsg = '본 상담 내용은 녹음되며, 욕설 및 폭언 사용 시 법적 조치 및 AI 상담사로 전환될 수 있습니다.';
   addChatMsg('ai', '🔔 시스템 안내', legalMsg, '');
-  speak(legalMsg);
-  await sleep(4500);
+  await speak(legalMsg);
 
   // TTS: 담당 부서 연결 안내
   const dept = routeData.department || '담당';
   const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
   addChatMsg('ai', '🔔 AI 안내', connMsg, '');
-  speak(connMsg);
+  await speak(connMsg);
 
   // 연결 중 애니메이션
-  await sleep(400);
   $('routing-connecting').classList.remove('hidden');
   $('routing-dept-label').textContent = `${dept}에 연결 중...`;
   setCallStatus('연결 중...', 'normal');
@@ -440,12 +440,48 @@ async function triggerRouting(text, complaintType) {
 async function activateAI(score) {
   aiModeActive = true;
 
-  const newCount = callerOffenseCount + 1;
-  const banHours = newCount >= 3 ? 24 : newCount === 2 ? 3 : 1;
+  // 폼에 입력된 이름/전화번호로 자동 등록 및 전과 기록
+  const nameVal  = $('caller-name-input')?.value.trim() || '미확인';
+  const phoneVal = $('caller-phone-input')?.value.trim() || '';
+  let banSeconds = 0;
+
+  if (phoneVal) {
+    try {
+      const res = await fetch(`${API}/caller/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: SESSION_ID, name: nameVal, phone: phoneVal }),
+      });
+      const data = await res.json();
+      callerOffenseCount = data.offense_count || 0;
+      callerName  = data.name;
+      callerPhone = data.phone;
+      if (data.ban_status?.remaining_seconds) {
+        banSeconds = data.ban_status.remaining_seconds;
+      }
+      // 조회 결과 배지 업데이트
+      const badge = $('penalty-badge');
+      if (badge) {
+        const cnt = data.offense_count;
+        badge.classList.remove('hidden', 'clean', 'warn1', 'warn2', 'ban');
+        if (cnt === 0)      { badge.className = 'penalty-badge clean'; badge.textContent = '신규 민원인 · 경고 3회 허용'; }
+        else if (cnt === 1) { badge.className = 'penalty-badge warn1'; badge.textContent = `⚠️ 악성민원 이력 ${cnt}회 · 경고 2회 허용`; }
+        else if (cnt === 2) { badge.className = 'penalty-badge warn2'; badge.textContent = `🔴 악성민원 이력 ${cnt}회 · 경고 1회 허용`; }
+        else                { badge.className = 'penalty-badge ban';   badge.textContent = `🚨 악성민원 이력 ${cnt}회 이상 · 욕설 즉시 AI 전환`; }
+      }
+    } catch {}
+  }
+
+  if (banSeconds > 0) {
+    startBanCountdown(banSeconds);
+  }
+
+  const newCount = callerOffenseCount;
+  const banHours = newCount >= 3 ? 24 : newCount === 2 ? 6 : 1;
 
   const systemMsg = score >= 80
-    ? `⚠️ 심각한 폭언이 감지되어 AI 음성 상담으로 즉시 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→3시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`
-    : `⚠️ 폭언이 감지되어 AI 음성 상담으로 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→3시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`;
+    ? `⚠️ 심각한 폭언이 감지되어 AI 음성 상담으로 즉시 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→6시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`
+    : `⚠️ 폭언이 감지되어 AI 음성 상담으로 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→6시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`;
 
   const aiGreeting = '안녕하세요. AI 상담원입니다. 원하시는 민원 내용을 말씀해 주세요';
 
@@ -459,15 +495,12 @@ async function activateAI(score) {
     ? `반복적인 심각한 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`
     : `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
   addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
-  speak(systemMsgShort);
-  await sleep(3500);
+  await speak(systemMsgShort);
   addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
-  speak(aiGreeting);
-  await sleep(800);
+  await speak(aiGreeting);
   addChatbotLink();
   const chatbotGuide = '채팅 상담을 원하시면 화면에 표시된 화성시 민원 챗봇 링크를 이용해 주세요.';
-  await sleep(2000);
-  speak(chatbotGuide);
+  await speak(chatbotGuide);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
@@ -509,7 +542,6 @@ async function generateAgentResponse(question, complaintType) {
 
 // ── AI 응답 생성 ──────────────────────────────────────────────────────────
 async function generateAIResponse(question, complaintType) {
-  // 잠깐 기다렸다가 응답 (자연스러움)
   await sleep(600);
 
   let response;
@@ -538,32 +570,30 @@ async function generateAIResponse(question, complaintType) {
 
 // ── 음성 출력 ─────────────────────────────────────────────────────────────
 function speak(text) {
-  if (!window.speechSynthesis) return;
-  suppressSTT = true;
-  speechSynthesis.cancel();
+  return new Promise(resolve => {
+    if (!window.speechSynthesis) { resolve(); return; }
+    suppressSTT = true;
+    speechSynthesis.cancel();
 
-  if (recognition && isCallActive) {
-    try { recognition.stop(); } catch {}
-  }
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang  = 'ko-KR';
+    utt.rate  = 0.92;
+    utt.pitch = 1.05;
 
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang  = 'ko-KR';
-  utt.rate  = 0.92;
-  utt.pitch = 1.05;
+    const resume = () => {
+      setTimeout(() => {
+        suppressSTT = false;
+        if (isCallActive && recognition) {
+          try { recognition.start(); } catch {}
+        }
+        resolve();
+      }, 500);
+    };
+    utt.onend   = resume;
+    utt.onerror = resume;
 
-  const resume = () => {
-    // TTS 종료 후 500ms 대기 후 STT 재개 (에코 유입 방지)
-    setTimeout(() => {
-      suppressSTT = false;
-      if (isCallActive && recognition) {
-        try { recognition.start(); } catch {}
-      }
-    }, 500);
-  };
-  utt.onend   = resume;
-  utt.onerror = resume;
-
-  speechSynthesis.speak(utt);
+    speechSynthesis.speak(utt);
+  });
 }
 
 // ── UI 업데이트 함수들 ────────────────────────────────────────────────────
@@ -587,8 +617,6 @@ function updateAnalysisPanel(a) {
   setBar('profanity', a.profanity_score || 0);
   setBar('threat',    a.threat_score || 0);
   setBar('anger',     a.anger_score || 0);
-  setBar('repetition',a.repetition_score || 0);
-
   // 카운터
   profanityTotal = a.profanity_total || profanityTotal;
   threatTotal    = a.threat_total    || threatTotal;
@@ -597,7 +625,6 @@ function updateAnalysisPanel(a) {
   $('cnt-profanity').textContent = profanityTotal;
   $('cnt-threat').textContent    = threatTotal;
   $('cnt-turns').textContent     = turnTotal;
-  $('cnt-repeat').textContent    = a.repeat_count || 0;
 
   // 상태 배지 (왼쪽 패널)
   showBadge(aiModeActive ? 'ai' : level);
@@ -662,7 +689,6 @@ function addDetectedEntry(text, a) {
   if (a.matched_bad_words?.length)   tags.push('<span class="tag profanity">욕설</span>');
   if (a.matched_threats?.length)     tags.push('<span class="tag threat">위협</span>');
   if (a.anger_score > 30)            tags.push('<span class="tag anger">분노</span>');
-  if (a.repeat_count > 0)            tags.push('<span class="tag repeat">반복</span>');
   tags.push(`<span class="tag score">${a.risk_score}점</span>`);
 
   el.innerHTML = `<div class="entry-text">${escHtml(shortText)}</div><div class="entry-tags">${tags.join('')}</div>`;
@@ -854,8 +880,8 @@ function resetStats() {
   aiModeActive = false; logEntries = [];
   const warnEl = $('db-warnings');
   if (warnEl) { warnEl.textContent = '-'; warnEl.style.color = ''; }
-  ['cnt-profanity','cnt-threat','cnt-turns','cnt-repeat'].forEach(id => { $(id).textContent = '0'; });
-  ['profanity','threat','anger','repetition'].forEach(n => { setBar(n, 0); });
+  ['cnt-profanity','cnt-threat','cnt-turns'].forEach(id => { const el = $(id); if (el) el.textContent = '0'; });
+  ['profanity','threat','anger'].forEach(n => { setBar(n, 0); });
   $('gauge-fill').style.width = '0%';
   $('risk-score-num').textContent = '0';
   $('risk-score-num').className = 'risk-score-num';

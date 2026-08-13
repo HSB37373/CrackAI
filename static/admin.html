@@ -32,12 +32,38 @@
     td:last-child { text-align: right; }
     .loading { color: #64748b; font-size: 0.85rem; }
     .section-title { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin: 28px 0 14px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid #334155; }
+    .tab-btn { background: none; border: none; width: auto; padding: 10px 22px; margin: 0; color: #94a3b8; font-size: 0.95rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; border-radius: 0; transition: 0.15s; }
+    .tab-btn:hover { color: #e2e8f0; opacity: 1; }
+    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .bl-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .bl-table th { text-align: left; font-size: 0.75rem; color: #64748b; padding: 8px 10px; border-bottom: 1px solid #334155; }
+    .bl-table td { font-size: 0.85rem; padding: 10px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+    .ban-active { color: #f87171; font-weight: 600; }
+    .ban-none   { color: #4ade80; }
+    .del-btn { background: #7f1d1d; color: #fca5a5; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; width: auto; margin: 0; }
+    .del-btn:hover { background: #991b1b; opacity: 1; }
+    .offense-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
+    .off-0 { background: #064e3b; color: #6ee7b7; }
+    .off-1 { background: #78350f; color: #fde68a; }
+    .off-2 { background: #7c2d12; color: #fdba74; }
+    .off-3 { background: #7f1d1d; color: #fca5a5; }
+    .empty-msg { text-align: center; color: #475569; padding: 32px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>관리자 대시보드</h1>
-  <p class="sub">서울 열린데이터광장 API 연동 현황 · civil_service_faq.json 관리</p>
+  <p class="sub">민원 AI 보호 시스템 관리</p>
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('faq')">📋 FAQ 관리</button>
+    <button class="tab-btn" onclick="switchTab('blacklist')">🚫 블랙리스트</button>
+  </div>
+
+  <!-- ■ FAQ 탭 -->
+  <div class="tab-panel active" id="tab-faq">
   <div class="grid">
     <!-- FAQ 통계 카드 -->
     <div class="card">
@@ -86,6 +112,35 @@
     <button class="btn-gray" onclick="loadRaw()">원본 데이터 보기 (최대 20건)</button>
     <pre id="raw-preview" style="display:none"></pre>
   </div>
+  </div><!-- end tab-faq -->
+
+  <!-- ■ 블랙리스트 탭 -->
+  <div class="tab-panel" id="tab-blacklist">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <span style="color:#94a3b8; font-size:0.9rem;">최근 6개월 내 악성 민원 이력 기준 · AI 전환 시 자동 등록</span>
+      <button class="btn-gray" style="width:auto; padding:8px 18px;" onclick="loadBlacklist()">🔄 새로고침</button>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table class="bl-table">
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>전화번호</th>
+            <th>최근 6개월 전과</th>
+            <th>누적 전과</th>
+            <th>마지막 발생일</th>
+            <th>통화 제한 상태</th>
+            <th>제한 만료</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="bl-table-body">
+          <tr><td colspan="8" class="empty-msg">불러오는 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="bl-summary" style="margin-top:12px; color:#64748b; font-size:0.82rem;"></div>
+  </div>
 
 <script>
 const log = (msg, ok) => {
@@ -104,8 +159,6 @@ async function loadStats() {
       <span class="badge ${res.raw_api_exists ? 'ok' : 'err'}">${res.raw_api_exists ? res.raw_api_total + '건' : '없음'}</span>
     </div>
   `;
-
-  document.getElementById('raw-count').textContent = res.raw_api_exists ? res.raw_api_total + '건' : '없음';
 
   // 테이블
   const tbody = document.getElementById('faq-table');
@@ -162,6 +215,61 @@ async function loadRaw() {
 }
 
 loadStats();
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['faq','blacklist'][i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'blacklist') loadBlacklist();
+}
+
+async function loadBlacklist() {
+  const tbody = document.getElementById('bl-table-body');
+  tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">불러오는 중...</td></tr>';
+  try {
+    const res = await fetch('/admin/blacklist').then(r => r.json());
+    if (!res.callers.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">등록된 블랙리스트가 없습니다.</td></tr>';
+      document.getElementById('bl-summary').textContent = '';
+      return;
+    }
+    tbody.innerHTML = res.callers.map(c => {
+      const offCls = c.recent_offenses >= 3 ? 'off-3' : c.recent_offenses === 2 ? 'off-2' : c.recent_offenses === 1 ? 'off-1' : 'off-0';
+      const banText = c.is_banned
+        ? `<span class="ban-active">🚫 제한 중</span>`
+        : `<span class="ban-none">✅ 정상</span>`;
+      const expires = c.ban_expires_at
+        ? c.ban_expires_at.replace('T', ' ').slice(0, 16)
+        : '-';
+      const lastDate = c.last_offense
+        ? c.last_offense.replace('T', ' ').slice(0, 16)
+        : '-';
+      return `<tr>
+        <td>${c.name}</td>
+        <td style="font-family:monospace">${c.phone}</td>
+        <td><span class="offense-badge ${offCls}">${c.recent_offenses}회</span></td>
+        <td style="color:#64748b">${c.total_offenses}회</td>
+        <td style="color:#94a3b8">${lastDate}</td>
+        <td>${banText}</td>
+        <td style="color:#94a3b8; font-size:0.8rem">${expires}</td>
+        <td><button class="del-btn" onclick="deleteCaller('${c.phone}')">삭제</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('bl-summary').textContent =
+      `총 ${res.total}명 등록 · 제한 중 ${res.callers.filter(c => c.is_banned).length}명`;
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">조회 실패 — 서버를 확인해주세요.</td></tr>';
+  }
+}
+
+async function deleteCaller(phone) {
+  if (!confirm(`${phone} 번호의 블랙리스트 기록을 삭제하시겠습니까?`)) return;
+  const res = await fetch(`/admin/blacklist/${encodeURIComponent(phone)}`, { method: 'DELETE' }).then(r => r.json());
+  if (res.ok) loadBlacklist();
+  else alert('삭제 실패');
+}
 </script>
 </body>
 </html>
