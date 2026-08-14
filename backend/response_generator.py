@@ -308,6 +308,9 @@ def get_faq_context(complaint_type: str) -> str:
             f"필요서류: {', '.join(info.get('필요서류', []))}",
             f"안내: {info.get('안내', '')}",
         ]
+        if info.get("구별_연락처"):
+            lines = [f"  {g}: {v['부서']} {v['전화']}" for g, v in info["구별_연락처"].items()]
+            faq_lines.append("구별 담당 연락처:\n" + "\n".join(lines))
         if info.get("응대기준"):
             faq_lines.append(f"응대기준: {info['응대기준']}")
         for item in info.get("faq", []):

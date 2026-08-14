@@ -21,6 +21,12 @@ def analyze(text: str, history: list[str]) -> dict:
     matched_bad = [w for w in bad_words if w in text]
     profanity_score = min(100, len(matched_bad) * 35)
 
+    # 브라우저 STT가 욕설을 ***로 자동 검열한 경우 — 욕설로 간주
+    if re.search(r'\*{2,}', text):
+        profanity_score = max(profanity_score, 70)
+        if "씨" not in matched_bad:
+            matched_bad.append("(STT검열)")
+
     # ② 위협 표현 점수 (키워드)
     matched_threats = [p for p in threat_patterns if p in text]
     high = [p for p in matched_threats if p in high_threat]
