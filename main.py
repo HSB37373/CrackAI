@@ -328,26 +328,34 @@ async def admin_faq_stats():
 
 @app.post("/admin/crawl")
 async def admin_crawl():
-    """화성소통봇 크롤러를 백그라운드로 실행 (전체 메뉴 수집)."""
+    """화성소통봇 크롤러를 진짜 백그라운드로 실행 후 즉시 응답 (프록시 타임아웃 방지)."""
     import asyncio, sys
     from pathlib import Path as P
     script = str(P(__file__).parent / "scripts" / "crawl_hscity.py")
-    proc = await asyncio.create_subprocess_exec(
+    log_path = P(__file__).parent / "data" / "hscity_output" / "crawl.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_file = open(log_path, "w", encoding="utf-8")
+    await asyncio.create_subprocess_exec(
         sys.executable, script,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stdout=log_file,
+        stderr=log_file,
         cwd=str(P(__file__).parent),
     )
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
-        return {
-            "ok": proc.returncode == 0,
-            "stdout": stdout.decode("utf-8", errors="replace"),
-            "stderr": stderr.decode("utf-8", errors="replace"),
-        }
-    except asyncio.TimeoutError:
-        proc.kill()
-        return {"ok": False, "stdout": "", "stderr": "시간 초과 (600초)"}
+    return {
+        "ok": True,
+        "stdout": "크롤링이 백그라운드에서 시작됐습니다.\n완료까지 10분 이상 걸릴 수 있습니다.\n완료 후 '통계 재로드' 버튼을 눌러 결과를 확인하세요.",
+        "stderr": "",
+    }
+
+
+@app.get("/admin/crawl-log")
+async def admin_crawl_log():
+    """진행 중인 크롤링 로그 확인."""
+    from pathlib import Path as P
+    log_path = P(__file__).parent / "data" / "hscity_output" / "crawl.log"
+    if not log_path.exists():
+        return {"log": "로그 없음"}
+    return {"log": log_path.read_text(encoding="utf-8", errors="replace")[-3000:]}
 
 
 @app.post("/admin/crawl-test")

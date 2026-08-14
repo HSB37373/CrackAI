@@ -102,6 +102,7 @@
   </div>
 
 <script>
+const BASE = window.location.pathname.replace(/\/[^/]*$/, '');
 const log = (msg, ok) => {
   const el = document.getElementById('log-output');
   el.style.display = 'block';
@@ -111,7 +112,7 @@ const log = (msg, ok) => {
 };
 
 async function loadStats() {
-  const res = await fetch('/admin/faq-stats').then(r => r.json());
+  const res = await fetch(`${BASE}/admin/faq-stats`).then(r => r.json());
 
   // 현황 카드
   const ragCount = res.hscity_rag_count || 0;
@@ -149,7 +150,7 @@ async function runCrawl(mode) {
   const fullBtn = document.getElementById('btn-full');
   testBtn.disabled = true; fullBtn.disabled = true;
 
-  const endpoint = mode === 'test' ? '/admin/crawl-test' : '/admin/crawl';
+  const endpoint = mode === 'test' ? `${BASE}/admin/crawl-test` : `${BASE}/admin/crawl`;
   const label = mode === 'test' ? '세정 테스트' : '전체 크롤링';
 
   document.getElementById('log-output').textContent = '';
@@ -176,13 +177,13 @@ async function runCrawl(mode) {
 
 async function runReload() {
   log('통계 재로드...');
-  await fetch('/admin/reload', { method: 'POST' });
+  await fetch(`${BASE}/admin/reload`, { method: 'POST' });
   loadStats();
   log('완료', true);
 }
 
 async function loadRagDocs() {
-  const res = await fetch('/admin/rag-docs?limit=20').then(r => r.json());
+  const res = await fetch(`${BASE}/admin/rag-docs?limit=20`).then(r => r.json());
   const el = document.getElementById('rag-docs');
   if (!res.docs || res.docs.length === 0) {
     el.innerHTML = '<p class="loading">RAG 문서가 없습니다. 먼저 크롤링을 실행하세요.</p>';

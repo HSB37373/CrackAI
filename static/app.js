@@ -345,11 +345,7 @@ async function processUtterance(text) {
     await generateAIResponse(text, lastComplaintType);
   }
 
-  // 모니터링 단계: 욕설·위협이 없는 발화에 상담원 응답
-  if (!routingPhase && !aiModeActive && !justActivated &&
-      !analysis.matched_bad_words?.length && !analysis.matched_threats?.length) {
-    await generateAgentResponse(text, lastComplaintType);
-  }
+  // 정상 상담 중에는 AI가 응답하지 않음 — AI 전환 시에만 generateAIResponse 호출
 }
 
 // ── AI 라우팅: 민원 분류 → 브리핑 카드 → 상담원 연결 ──────────────────────
