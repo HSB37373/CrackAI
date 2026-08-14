@@ -8,6 +8,9 @@ import sys
 import uuid
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
 
 sys.path.insert(0, str(Path(__file__).parent / "backend"))
 sys.path.insert(0, str(Path(__file__).parent))

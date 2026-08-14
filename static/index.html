@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>민원 AI 보호 시스템</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
@@ -44,10 +46,18 @@
         <span id="mic-label">통화 시작</span>
       </button>
 
-      <!-- 텍스트 입력 (마이크 대체 / 데모용) -->
+      <!-- 민원인 입력 -->
+      <div class="input-label">📞 민원인</div>
       <div class="text-input-area">
-        <input type="text" id="text-input" placeholder="마이크 대신 직접 입력..." />
+        <input type="text" id="text-input" placeholder="민원인 발화 입력..." />
         <button id="send-btn">전송</button>
+      </div>
+
+      <!-- 상담사 입력 -->
+      <div class="input-label agent-label">🎧 상담사</div>
+      <div class="text-input-area">
+        <input type="text" id="agent-input" placeholder="상담사 응대 내용 입력..." />
+        <button id="agent-send-btn">전송</button>
       </div>
 
       <div class="chat-area" id="chat-area">
@@ -70,64 +80,6 @@
         <h2>실시간 분석</h2>
       </div>
 
-      <!-- 위험도 게이지 -->
-      <div class="risk-gauge-section">
-        <div class="risk-label-row">
-          <span>위험도 점수</span>
-          <span id="risk-score-num" class="risk-score-num">0</span>
-          <span>/ 100</span>
-        </div>
-        <div class="gauge-track">
-          <div class="gauge-fill" id="gauge-fill"></div>
-          <div class="gauge-marks">
-            <span style="left:30%">30</span>
-            <span style="left:60%">60</span>
-            <span style="left:80%">80</span>
-          </div>
-        </div>
-        <div class="level-badge" id="level-badge">정상</div>
-      </div>
-
-      <!-- 세부 지표 -->
-      <div class="metrics">
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>욕설·비속어</span>
-            <span id="profanity-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill profanity" id="profanity-bar"></div>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>위협 표현</span>
-            <span id="threat-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill threat" id="threat-bar"></div>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>분노 표현</span>
-            <span id="anger-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill anger" id="anger-bar"></div>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>반복 발화</span>
-            <span id="repetition-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill repetition" id="repetition-bar"></div>
-          </div>
-        </div>
-      </div>
-
       <!-- 감지 카운터 -->
       <div class="counter-grid">
         <div class="counter-item">
@@ -141,10 +93,6 @@
         <div class="counter-item">
           <div class="counter-num" id="cnt-turns">0</div>
           <div class="counter-label">총 발화 수</div>
-        </div>
-        <div class="counter-item">
-          <div class="counter-num" id="cnt-repeat">0</div>
-          <div class="counter-label">반복 발화</div>
         </div>
       </div>
 
@@ -164,15 +112,75 @@
         <h2>담당자 보호 대시보드</h2>
       </div>
 
+      <!-- AI 민원 분석 브리핑 카드 (라우팅 완료 시 표시) -->
+      <div class="routing-brief hidden" id="routing-brief">
+        <div class="routing-brief-header">
+          <span>🤖 AI 민원 분석</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="routing-source-badge hidden" id="routing-source-badge"></span>
+            <span class="routing-badge" id="routing-badge">분석 중</span>
+          </div>
+        </div>
+        <div class="routing-brief-body">
+          <div class="brief-row">
+            <span class="brief-key">민원 유형</span>
+            <span class="brief-val" id="brief-type">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">세부 유형</span>
+            <span class="brief-val brief-sub" id="brief-sub-type">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">지역</span>
+            <span class="brief-val" id="brief-location">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">긴급도</span>
+            <span class="brief-val" id="brief-urgency">-</span>
+          </div>
+          <div class="brief-row">
+            <span class="brief-key">관련 부서</span>
+            <span class="brief-val brief-dept" id="brief-dept">-</span>
+          </div>
+          <div class="brief-summary-box">
+            <div class="brief-summary-label">민원 요약</div>
+            <div class="brief-summary-text" id="brief-summary">-</div>
+          </div>
+        </div>
+        <div class="routing-connecting hidden" id="routing-connecting">
+          <span class="conn-dot"></span><span class="conn-dot"></span><span class="conn-dot"></span>
+          <span id="routing-dept-label">담당 상담원에게 연결 중...</span>
+        </div>
+        <div class="routing-connected hidden" id="routing-connected">
+          ✅ 상담원 연결 완료 &mdash; 통화 모니터링 시작
+        </div>
+      </div>
+
+      <!-- 민원인 정보 조회 -->
+      <div class="caller-lookup">
+        <div class="caller-lookup-title">민원인 정보 조회</div>
+        <div class="caller-lookup-inputs">
+          <input type="text" id="caller-name-input" placeholder="이름" />
+          <input type="text" id="caller-phone-input" placeholder="전화번호" />
+          <button id="register-caller-btn">조회</button>
+        </div>
+        <div class="penalty-badge hidden" id="penalty-badge"></div>
+        <div class="ban-status hidden" id="ban-status">
+          <div class="ban-label">🚫 상담원 통화 제한 중</div>
+          <div class="ban-timer" id="ban-timer">00:00:00</div>
+          <div class="ban-sub">AI 챗봇 · 음성 상담만 가능</div>
+        </div>
+      </div>
+
       <!-- 현재 상태 요약 -->
       <div class="status-summary">
         <div class="summary-row">
-          <span class="summary-key">현재 위험도</span>
-          <span class="summary-val risk-val" id="db-risk">0점 · 정상</span>
-        </div>
-        <div class="summary-row">
           <span class="summary-key">악성 표현 누적</span>
           <span class="summary-val" id="db-toxic">0회</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">욕설 경고 현황</span>
+          <span class="summary-val" id="db-warnings">-</span>
         </div>
         <div class="summary-row">
           <span class="summary-key">AI 전환 상태</span>

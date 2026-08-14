@@ -4,6 +4,41 @@
 const API = window.location.pathname.replace(/\/[^/]*$/, '') || '.';
 const SESSION_ID = 'sess_' + Date.now();
 
+// ── 데모 모드 ─────────────────────────────────────────────────────────────
+// true  → 데모 시나리오 발화에 대해 GPT 분석 결과처럼 보이는 하드코딩 응답 사용
+// false → 실제 /route API 호출 (OPENAI_API_KEY 있으면 GPT, 없으면 룰 기반)
+const DEMO_MODE = true;
+
+// 데모 발화 → 미리 작성된 GPT 스타일 분석 결과
+const DEMO_ROUTES = {
+  '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.': {
+    complaint_type: '불법주정차',
+    sub_type:       '주차위반 과태료 이의신청',
+    location:       '동탄',
+    urgency:        '보통',
+    department:     '교통행정과',
+    summary:        '동탄 지역에서 주차위반 과태료 고지서를 수령한 시민이 이의신청 방법 및 필요 절차에 대한 안내를 요청하고 있음.',
+    source:         'gpt',
+  },
+  '동탄 ○○동에 밤마다 불법주차가 너무 많아요. 특히 어린이집 앞이라 위험합니다.': {
+    complaint_type: '불법주정차',
+    sub_type:       '어린이보호구역 / 반복 불법주정차',
+    location:       '동탄 ○○동',
+    urgency:        '높음',
+    department:     '교통행정과',
+    summary:        '어린이집 인근 어린이보호구역에서 야간 불법주정차가 반복되어 보행 안전에 위험이 발생하고 있음. 신속한 현장 단속 및 계도 조치 필요.',
+    source:         'gpt',
+  },
+};
+
+// 데모 상담원 응답 — 민원인 발화 → 상담원이 할 법한 답변
+const DEMO_AGENT_RESPONSES = {
+  '서류는 뭐가 필요한가요?':
+    '이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 그리고 증빙자료(현장 사진 등)입니다. 고지서 수령 후 60일 이내에 신청하셔야 하며, 교통행정과 방문 또는 정부24 온라인으로 접수하실 수 있습니다.',
+  '이의신청 서류 제출 기한이 언제까지예요?':
+    '이의신청 기간은 과태료 고지서를 받으신 날로부터 60일 이내입니다. 처리 기간은 접수 후 14일이며, 결과는 등기우편으로 통보해 드립니다.',
+};
+
 // ── 상태 ──────────────────────────────────────────────────────────────────
 let isCallActive = false;
 let aiModeActive = false;
@@ -18,6 +53,20 @@ let lastComplaintType = '-';
 let lastDept = '-';
 let logEntries = [];
 
+// 악성민원 이력 관련
+let callerPhone = '';
+let callerName = '';
+let callerOffenseCount = 0;
+let aiThreshold = 3;
+let banTimerInterval = null;
+
+// AI 라우팅 단계
+let routingPhase = true;   // 첫 발화 전까지 true
+let routingDone  = false;  // 라우팅 브리핑 표시 완료 여부
+
+// TTS 재생 중 STT 피드백 루프 방지 플래그
+let suppressSTT  = false;
+
 // ── DOM 참조 ──────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
@@ -25,6 +74,8 @@ const micBtn       = $('mic-btn');
 const micLabel     = $('mic-label');
 const textInput    = $('text-input');
 const sendBtn      = $('send-btn');
+const agentInput   = $('agent-input');
+const agentSendBtn = $('agent-send-btn');
 const chatArea     = $('chat-area');
 const callStatus   = $('call-status-text');
 const callTimerEl  = $('call-timer');
@@ -40,8 +91,12 @@ function init() {
   micBtn.addEventListener('click', toggleCall);
   sendBtn.addEventListener('click', () => sendText());
   textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
+  agentSendBtn.addEventListener('click', () => sendAgentText());
+  agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAgentText(); });
   summaryBtn.addEventListener('click', generateSummary);
   $('demo-btn').addEventListener('click', runDemo);
+  $('register-caller-btn').addEventListener('click', registerCaller);
+  $('caller-phone-input').addEventListener('keydown', e => { if (e.key === 'Enter') registerCaller(); });
 
   initSpeechRecognition();
 }
@@ -59,6 +114,7 @@ function initSpeechRecognition() {
   recognition.interimResults = true;
 
   recognition.onresult = evt => {
+    if (suppressSTT) return; // TTS 재생 중 피드백 루프 차단
     let interim = '', final = '';
     for (let i = evt.resultIndex; i < evt.results.length; i++) {
       const t = evt.results[i][0].transcript;
@@ -80,6 +136,91 @@ function initSpeechRecognition() {
   };
 }
 
+// ── 민원인 조회 ───────────────────────────────────────────────────────────
+async function registerCaller() {
+  const name  = $('caller-name-input').value.trim();
+  const phone = $('caller-phone-input').value.trim();
+  if (!phone) return;
+
+  const badge = $('penalty-badge');
+
+  try {
+    const res = await fetch(`${API}/caller/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: SESSION_ID, name, phone }),
+    });
+    const data = await res.json();
+
+    callerName        = data.name;
+    callerPhone       = data.phone;
+    callerOffenseCount= data.offense_count;
+    aiThreshold       = data.ai_threshold;
+
+    badge.classList.remove('hidden', 'clean', 'warn1', 'warn2', 'ban');
+
+    const count = data.offense_count;
+    if (count === 0) {
+      badge.className = 'penalty-badge clean';
+      badge.textContent = '신규 민원인 · 경고 3회 허용';
+    } else if (count === 1) {
+      badge.className = 'penalty-badge warn1';
+      badge.textContent = `⚠️ 악성민원 이력 ${count}회 · 경고 2회 허용`;
+    } else if (count === 2) {
+      badge.className = 'penalty-badge warn2';
+      badge.textContent = `🔴 악성민원 이력 ${count}회 · 경고 1회 허용`;
+    } else {
+      badge.className = 'penalty-badge ban';
+      badge.textContent = `🚨 악성민원 이력 ${count}회 이상 · 욕설 즉시 AI 전환`;
+    }
+
+    // 통화 제한 상태 표시
+    if (data.ban_status && data.ban_status.is_banned) {
+      startBanCountdown(data.ban_status.remaining_seconds);
+    } else {
+      clearBanStatus();
+    }
+  } catch {
+    badge.className = 'penalty-badge warn1';
+    badge.classList.remove('hidden');
+    badge.textContent = '⚠️ 서버 조회 실패 — 기본 경고 3회 적용';
+  }
+}
+
+function startBanCountdown(remainingSeconds) {
+  clearInterval(banTimerInterval);
+  const banEl  = $('ban-status');
+  const timerEl = $('ban-timer');
+  banEl.classList.remove('hidden', 'lifted');
+
+  function tick() {
+    if (remainingSeconds <= 0) {
+      clearInterval(banTimerInterval);
+      banEl.classList.add('lifted');
+      $('ban-label').textContent = '✅ 통화 제한 해제됨';
+      timerEl.textContent = '00:00:00';
+      $('ban-sub').textContent = '상담원 통화 재개 가능';
+      return;
+    }
+    const h = Math.floor(remainingSeconds / 3600);
+    const m = Math.floor((remainingSeconds % 3600) / 60);
+    const s = remainingSeconds % 60;
+    timerEl.textContent =
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    remainingSeconds--;
+  }
+  tick();
+  banTimerInterval = setInterval(tick, 1000);
+}
+
+function clearBanStatus() {
+  clearInterval(banTimerInterval);
+  $('ban-status').classList.add('hidden');
+  $('ban-status').classList.remove('lifted');
+  $('ban-label').textContent = '🚫 상담원 통화 제한 중';
+  $('ban-sub').textContent = 'AI 챗봇 · 음성 상담만 가능';
+}
+
 // ── 통화 제어 ─────────────────────────────────────────────────────────────
 function toggleCall() {
   if (isCallActive) stopCall();
@@ -90,11 +231,12 @@ function startCall() {
   isCallActive = true;
   clearChatArea();
   resetStats();
+  resetRoutingBrief();
 
   micBtn.classList.add('active');
   micLabel.textContent = '통화 종료';
   callIndicator.classList.add('active');
-  setCallStatus('통화 중', 'active');
+  setCallStatus('AI 민원 분석 중', 'normal');
 
   callSeconds = 0;
   callTimer = setInterval(() => {
@@ -104,9 +246,12 @@ function startCall() {
     callTimerEl.textContent = `${m}:${s}`;
   }, 1000);
 
-  if (recognition) {
-    try { recognition.start(); } catch {}
-  }
+  // STT를 먼저 시작 — speak()가 suppressSTT로 결과를 차단하고, TTS 종료 후 자동 재개
+  if (recognition) { try { recognition.start(); } catch {} }
+
+  const greeting = '안녕하세요. 화성시 민원 상담 서비스입니다. 거주하시는 지역과 불편하신 사항을 말씀해 주시면 담당 부서로 바로 연결해 드리겠습니다.';
+  addChatMsg('ai', '🔔 시스템', greeting, '');
+  speak(greeting);
 }
 
 function stopCall() {
@@ -130,6 +275,14 @@ function sendText() {
   textInput.value = '';
   if (!isCallActive) startCall();
   processUtterance(txt);
+}
+
+function sendAgentText() {
+  const txt = agentInput.value.trim();
+  if (!txt) return;
+  agentInput.value = '';
+  if (!isCallActive) startCall();
+  addChatMsg('agent', '🎧 상담사', txt, '');
 }
 
 // ── 핵심: 발화 처리 ──────────────────────────────────────────────────────
@@ -162,30 +315,169 @@ async function processUtterance(text) {
   lastComplaintType = analysis.complaint_type || '기타';
   lastDept = analysis.department || '-';
 
-  // AI 전환 여부 결정
-  if (!aiModeActive && analysis.risk_score >= 30) {
-    await activateAI(analysis.risk_score);
-  } else if (analysis.risk_score >= 30 && analysis.warning_message) {
-    // 주의 단계 안내
-    showWarning(analysis.warning_message, analysis.level);
+  // 라우팅 단계: 민원 유형이 분류되면 브리핑 카드 표시 후 상담원 연결
+  if (routingPhase && !routingDone && lastComplaintType !== '기타') {
+    routingDone = true;
+    await triggerRouting(text, lastComplaintType);
   }
 
-  // AI 모드이면 응답 생성
-  if (aiModeActive || analysis.ai_activated) {
+  // AI 전환 여부 결정
+  const justActivated = !aiModeActive && analysis.ai_activated;
+  if (justActivated) {
+    await activateAI(analysis.risk_score);
+  } else if (!aiModeActive) {
+    updateWarningCounter(analysis);
+    // 욕설 감지 즉시 경고 (점수/레벨 무관)
+    if (analysis.matched_bad_words?.length) {
+      const count = analysis.profanity_warning_count || 0;
+      const WARN_VOICE = [
+        '',
+        '경고 1회. 원활한 상담을 위해 차분한 표현을 사용해 주시기 바랍니다.',
+        '경고 2회. 폭언이 지속될 경우 담당 직원 보호를 위해 AI 상담으로 전환될 수 있습니다.',
+      ];
+      const msg = WARN_VOICE[count];
+      if (msg) showWarning(msg, 'danger');
+    }
+  }
+
+  // AI 모드이면 AI 응답 생성 (전환된 바로 그 순간은 제외)
+  if (!justActivated && (aiModeActive || analysis.ai_activated)) {
     await generateAIResponse(text, lastComplaintType);
   }
+
+  // 정상 상담 중에는 AI가 응답하지 않음 — AI 전환 시에만 generateAIResponse 호출
+}
+
+// ── AI 라우팅: 민원 분류 → 브리핑 카드 → 상담원 연결 ──────────────────────
+async function triggerRouting(text, complaintType) {
+  // 브리핑 카드 표시 (로딩 상태)
+  const brief = $('routing-brief');
+  brief.classList.remove('hidden');
+
+  let routeData = {
+    complaint_type: complaintType,
+    sub_type: complaintType + ' 일반 문의',
+    location: '',
+    urgency: '보통',
+    department: lastDept,
+    summary: '민원 내용이 접수됨.',
+    source: 'rule',
+  };
+
+  // 데모 모드: 미리 작성된 GPT 스타일 응답 사용
+  if (DEMO_MODE && DEMO_ROUTES[text]) {
+    await sleep(600); // GPT 호출처럼 잠깐 딜레이
+    routeData = DEMO_ROUTES[text];
+  } else {
+    try {
+      const res = await fetch(`${API}/route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, session_id: SESSION_ID }),
+      });
+      routeData = await res.json();
+    } catch {}
+  }
+
+  // 브리핑 카드 데이터 채우기
+  $('brief-type').textContent = routeData.complaint_type || '-';
+  $('brief-sub-type').textContent = routeData.sub_type || '-';
+  $('brief-location').textContent = routeData.location || '화성시';
+  $('brief-dept').textContent = routeData.department || '-';
+  $('brief-summary').textContent = routeData.summary || '-';
+
+  const urg = $('brief-urgency');
+  const urgLevel = routeData.urgency || '보통';
+  urg.textContent = urgLevel === '높음' ? '높음 ⚠️' : urgLevel === '중간' ? '중간' : '보통';
+  urg.className = 'brief-val ' +
+    (urgLevel === '높음' ? 'brief-urgency-high' : urgLevel === '중간' ? 'brief-urgency-mid' : 'brief-urgency-low');
+
+  $('routing-badge').textContent = '분석 완료';
+  $('routing-badge').classList.add('done');
+
+  // GPT / 룰 기반 출처 배지
+  const srcBadge = $('routing-source-badge');
+  if (srcBadge) {
+    const isGpt = routeData.source === 'gpt';
+    srcBadge.textContent = isGpt ? 'GPT' : '규칙 기반';
+    srcBadge.className = 'routing-source-badge ' + (isGpt ? 'src-gpt' : 'src-rule');
+    srcBadge.classList.remove('hidden');
+  }
+
+  // TTS: 녹음·폭언 안내
+  const legalMsg = '본 상담 내용은 녹음되며, 욕설 및 폭언 사용 시 법적 조치 및 AI 상담사로 전환될 수 있습니다.';
+  addChatMsg('ai', '🔔 시스템 안내', legalMsg, '');
+  await speak(legalMsg);
+
+  // TTS: 담당 부서 연결 안내
+  const dept = routeData.department || '담당';
+  const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
+  addChatMsg('ai', '🔔 AI 안내', connMsg, '');
+  await speak(connMsg);
+
+  // 연결 중 애니메이션
+  $('routing-connecting').classList.remove('hidden');
+  $('routing-dept-label').textContent = `${dept}에 연결 중...`;
+  setCallStatus('연결 중...', 'normal');
+
+  await sleep(2200);
+
+  // 연결 완료
+  $('routing-connecting').classList.add('hidden');
+  $('routing-connected').classList.remove('hidden');
+  setCallStatus('모니터링 중', 'active');
+  addChatMsg('ai', '🔔 시스템', `✅ ${dept} 상담원에게 연결되었습니다. 통화 모니터링을 시작합니다.`, '');
+
+  // 라우팅 단계 종료 → 악성 민원 모니터링 단계로 전환
+  routingPhase = false;
 }
 
 // ── AI 전환 ──────────────────────────────────────────────────────────────
 async function activateAI(score) {
   aiModeActive = true;
 
-  let msg;
-  if (score >= 80) {
-    msg = '심각한 폭언이 감지되었습니다. 담당자 보호를 위해 AI 음성 상담으로 즉시 전환합니다. 민원 내용은 계속 처리됩니다.';
-  } else {
-    msg = '폭언이 감지되었습니다. 담당자 보호를 위해 AI 음성 상담으로 전환합니다. 민원 내용은 계속 처리됩니다.';
+  // 폼에 입력된 이름/전화번호로 자동 등록 및 전과 기록
+  const nameVal  = $('caller-name-input')?.value.trim() || '미확인';
+  const phoneVal = $('caller-phone-input')?.value.trim() || '';
+  let banSeconds = 0;
+
+  if (phoneVal) {
+    try {
+      const res = await fetch(`${API}/caller/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: SESSION_ID, name: nameVal, phone: phoneVal }),
+      });
+      const data = await res.json();
+      callerOffenseCount = data.offense_count || 0;
+      callerName  = data.name;
+      callerPhone = data.phone;
+      if (data.ban_status?.remaining_seconds) {
+        banSeconds = data.ban_status.remaining_seconds;
+      }
+      // 조회 결과 배지 업데이트
+      const badge = $('penalty-badge');
+      if (badge) {
+        const cnt = data.offense_count;
+        badge.classList.remove('hidden', 'clean', 'warn1', 'warn2', 'ban');
+        if (cnt === 0)      { badge.className = 'penalty-badge clean'; badge.textContent = '신규 민원인 · 경고 3회 허용'; }
+        else if (cnt === 1) { badge.className = 'penalty-badge warn1'; badge.textContent = `⚠️ 악성민원 이력 ${cnt}회 · 경고 2회 허용`; }
+        else if (cnt === 2) { badge.className = 'penalty-badge warn2'; badge.textContent = `🔴 악성민원 이력 ${cnt}회 · 경고 1회 허용`; }
+        else                { badge.className = 'penalty-badge ban';   badge.textContent = `🚨 악성민원 이력 ${cnt}회 이상 · 욕설 즉시 AI 전환`; }
+      }
+    } catch {}
   }
+
+  if (banSeconds > 0) {
+    startBanCountdown(banSeconds);
+  }
+
+  const newCount = callerOffenseCount;
+  const banHours = newCount >= 3 ? 24 : newCount === 2 ? 6 : 1;
+
+  const systemMsg = `⚠️ 폭언이 감지되어 AI 음성 상담으로 전환합니다.\n\n🚫 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.\n반복 발생 시 1회→1시간 / 2회→6시간 / 3회 이상→24시간으로 늘어납니다.\n\n📞 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 연락해 주시기 바랍니다.`;
+
+  const aiGreeting = '안녕하세요. AI 상담원입니다. 원하시는 민원 내용을 말씀해 주세요';
 
   showBadge('ai');
   setCallStatus('AI 상담 전환', 'ai');
@@ -193,16 +485,55 @@ async function activateAI(score) {
   callIndicator.classList.add('ai-mode');
   updateSystemBadge('ai-dot', 'AI 상담 전환 중');
 
-  addChatMsg('ai', '🤖 시스템', msg, '');
-  speak(msg);
+  const systemMsgShort = `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
+  addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
+  await speak(systemMsgShort);
+  addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
+  await speak(aiGreeting);
+  addChatbotLink();
+  const chatbotGuide = '채팅 상담을 원하시면 화면에 표시된 화성시 민원 챗봇 링크를 이용해 주세요.';
+  await speak(chatbotGuide);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
 }
 
+// ── 모니터링 단계 상담원 응답 ──────────────────────────────────────────────
+async function generateAgentResponse(question, complaintType) {
+  await sleep(800);
+
+  let response;
+
+  // 데모 모드: 발화별 하드코딩 응답 우선
+  if (DEMO_MODE && DEMO_AGENT_RESPONSES[question]) {
+    response = DEMO_AGENT_RESPONSES[question];
+  } else {
+    try {
+      const res = await fetch(`${API}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          complaint_type: complaintType,
+          question,
+          session_id: SESSION_ID,
+          use_ai: false,
+        }),
+      });
+      const data = await res.json();
+      response = data.response;
+    } catch {
+      response = null;
+    }
+  }
+
+  if (response) {
+    addChatMsg('agent', '🎧 상담원', response, '');
+    speak(response);
+  }
+}
+
 // ── AI 응답 생성 ──────────────────────────────────────────────────────────
 async function generateAIResponse(question, complaintType) {
-  // 잠깐 기다렸다가 응답 (자연스러움)
   await sleep(600);
 
   let response;
@@ -214,7 +545,7 @@ async function generateAIResponse(question, complaintType) {
         complaint_type: complaintType,
         question,
         session_id: SESSION_ID,
-        use_ai: !!window.__USE_AI_API__,
+        use_ai: true,
       }),
     });
     const data = await res.json();
@@ -231,37 +562,36 @@ async function generateAIResponse(question, complaintType) {
 
 // ── 음성 출력 ─────────────────────────────────────────────────────────────
 function speak(text) {
-  if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'ko-KR';
-  utt.rate = 0.92;
-  utt.pitch = 1.05;
-  speechSynthesis.speak(utt);
+  return new Promise(resolve => {
+    if (!window.speechSynthesis) { resolve(); return; }
+    suppressSTT = true;
+    speechSynthesis.cancel();
+
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang  = 'ko-KR';
+    utt.rate  = 0.92;
+    utt.pitch = 1.05;
+
+    const resume = () => {
+      setTimeout(() => {
+        suppressSTT = false;
+        if (isCallActive && recognition) {
+          try { recognition.start(); } catch {}
+        }
+        resolve();
+      }, 500);
+    };
+    utt.onend   = resume;
+    utt.onerror = resume;
+
+    speechSynthesis.speak(utt);
+  });
 }
 
 // ── UI 업데이트 함수들 ────────────────────────────────────────────────────
 function updateAnalysisPanel(a) {
-  const score = a.risk_score || 0;
   const level = a.level || 'normal';
   lastLevel = level;
-
-  // 게이지
-  $('gauge-fill').style.width = score + '%';
-  $('gauge-fill').style.background = levelColor(level);
-  $('risk-score-num').textContent = score;
-  $('risk-score-num').className = 'risk-score-num ' + level;
-
-  // 레벨 배지
-  const lb = $('level-badge');
-  lb.className = 'level-badge ' + level;
-  lb.textContent = levelLabel(level);
-
-  // 세부 바
-  setBar('profanity', a.profanity_score || 0);
-  setBar('threat',    a.threat_score || 0);
-  setBar('anger',     a.anger_score || 0);
-  setBar('repetition',a.repetition_score || 0);
 
   // 카운터
   profanityTotal = a.profanity_total || profanityTotal;
@@ -271,19 +601,39 @@ function updateAnalysisPanel(a) {
   $('cnt-profanity').textContent = profanityTotal;
   $('cnt-threat').textContent    = threatTotal;
   $('cnt-turns').textContent     = turnTotal;
-  $('cnt-repeat').textContent    = a.repeat_count || 0;
 
   // 상태 배지 (왼쪽 패널)
   showBadge(aiModeActive ? 'ai' : level);
 }
 
+function updateWarningCounter(a) {
+  const warnEl = $('db-warnings');
+  if (!warnEl) return;
+  const count  = a.profanity_warning_count || 0;
+  const thresh = a.ai_threshold ?? aiThreshold;
+
+  if (thresh === 0) {
+    warnEl.textContent = '즉시 전환 적용 중';
+    warnEl.style.color = 'var(--critical)';
+  } else if (count === 0) {
+    warnEl.textContent = `-`;
+    warnEl.style.color = '';
+  } else {
+    const remaining = Math.max(0, thresh - count);
+    warnEl.textContent = `${count}/${thresh}회 (${remaining}회 남음)`;
+    warnEl.style.color = remaining === 0 ? 'var(--danger)' : remaining === 1 ? 'var(--caution)' : '';
+
+    if (count > 0 && remaining > 0) {
+      const warnMsg = `욕설 경고 ${count}/${thresh} — 경고 ${remaining}회 남았습니다. 다음 욕설 시 AI 상담으로 전환됩니다.`;
+      addChatMsg('ai', '⚠️ 시스템', warnMsg, '');
+      // speak는 showWarning에서 담당 (두 번 호출 시 덮어쓰기 방지)
+    }
+  }
+}
+
 function updateDashboard(a) {
   const score = a.risk_score || 0;
   const level = a.level || 'normal';
-
-  const riskEl = $('db-risk');
-  riskEl.textContent = `${score}점 · ${levelLabel(level)}`;
-  riskEl.className = 'summary-val risk-val ' + level;
 
   $('db-toxic').textContent = `욕설 ${profanityTotal}회 / 위협 ${threatTotal}회`;
 
@@ -310,9 +660,6 @@ function addDetectedEntry(text, a) {
   const tags = [];
   if (a.matched_bad_words?.length)   tags.push('<span class="tag profanity">욕설</span>');
   if (a.matched_threats?.length)     tags.push('<span class="tag threat">위협</span>');
-  if (a.anger_score > 30)            tags.push('<span class="tag anger">분노</span>');
-  if (a.repeat_count > 0)            tags.push('<span class="tag repeat">반복</span>');
-  tags.push(`<span class="tag score">${a.risk_score}점</span>`);
 
   el.innerHTML = `<div class="entry-text">${escHtml(shortText)}</div><div class="entry-tags">${tags.join('')}</div>`;
   list.insertBefore(el, list.firstChild);
@@ -329,7 +676,7 @@ function addLogEntry(text, a) {
 
   const el = document.createElement('div');
   el.className = 'log-entry';
-  el.innerHTML = `<span class="log-score ${a.level}">${a.risk_score}</span><span class="log-text">${escHtml(text.slice(0, 60))}${text.length > 60 ? '…' : ''}</span>`;
+  el.innerHTML = `<span class="log-text">${escHtml(text.slice(0, 60))}${text.length > 60 ? '…' : ''}</span>`;
   list.insertBefore(el, list.firstChild);
   while (list.children.length > 10) list.removeChild(list.lastChild);
 
@@ -343,6 +690,23 @@ function addChatMsg(type, sender, text, extra) {
   const el = document.createElement('div');
   el.className = `chat-msg ${type} ${extra}`;
   el.innerHTML = `<div class="msg-sender">${sender}</div><div>${escHtml(text)}</div>`;
+  chatArea.appendChild(el);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addChatbotLink() {
+  const empty = chatArea.querySelector('.chat-placeholder');
+  if (empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = 'chat-msg ai';
+  el.innerHTML = `
+    <div class="msg-sender">🔔 시스템</div>
+    <div>음성 상담 대신 채팅 상담을 원하시면 화성시 민원 챗봇을 이용하실 수 있습니다.</div>
+    <a class="chatbot-link-btn" href="https://g.answerny.ai/chatbot/projects/hscity/chatbot_hscity.html"
+       target="_blank" rel="noopener noreferrer">
+      💬 화성시 민원 챗봇 바로가기 →
+    </a>`;
   chatArea.appendChild(el);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -365,7 +729,7 @@ function removeInterim() {
 function showWarning(msg, level) {
   if (level === 'caution' || level === 'danger') {
     addChatMsg('ai', '⚠️ 시스템', msg, '');
-    if (level === 'danger') speak(msg);
+    speak(msg); // caution, danger 모두 음성 안내
   }
 }
 
@@ -412,12 +776,14 @@ async function generateSummary() {
 
 // ── 데모 시나리오 ─────────────────────────────────────────────────────────
 const DEMO_SCRIPT = [
-  { delay: 0,    text: '여보세요, 주차 과태료 이의신청 하려고 하는데요.' },
-  { delay: 3000, text: '어디로 신청해야 하나요?' },
-  { delay: 6000, text: '담당자 바꿔요! 이게 뭐야 진짜.' },
-  { delay: 9000, text: '야, 이따위로 일할 거야? 당장 담당자 나오라고!' },
-  { delay: 12000, text: '미치겠네 진짜, 가만 안 둬!' },
-  { delay: 15500, text: '과태료 취소하려면 서류가 뭐가 필요해요?' },
+  // ① 라우팅 단계: 자연어 발화 → AI 분류 → 상담원 연결
+  { delay: 0,    text: '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.' },
+  // ② 라우팅 완료 후 모니터링 단계 (약 4초 소요)
+  { delay: 5500, text: '서류는 뭐가 필요한가요?' },
+  { delay: 8500, text: '왜 이렇게 복잡해요? 담당자 바꿔요!' },
+  { delay: 11500, text: '야, 이따위로 일할 거야? 당장 책임자 나오라고!' },
+  { delay: 14500, text: '미치겠네 진짜, 가만 안 둬!' },
+  { delay: 18000, text: '이의신청 서류 제출 기한이 언제까지예요?' },
 ];
 
 let demoRunning = false;
@@ -482,15 +848,9 @@ function clearChatArea() {
 function resetStats() {
   profanityTotal = 0; threatTotal = 0; turnTotal = 0; lastLevel = 'normal';
   aiModeActive = false; logEntries = [];
-  ['cnt-profanity','cnt-threat','cnt-turns','cnt-repeat'].forEach(id => { $(id).textContent = '0'; });
-  ['profanity','threat','anger','repetition'].forEach(n => { setBar(n, 0); });
-  $('gauge-fill').style.width = '0%';
-  $('risk-score-num').textContent = '0';
-  $('risk-score-num').className = 'risk-score-num';
-  $('level-badge').className = 'level-badge';
-  $('level-badge').textContent = '정상';
-  $('db-risk').textContent = '0점 · 정상';
-  $('db-risk').className = 'summary-val risk-val normal';
+  const warnEl = $('db-warnings');
+  if (warnEl) { warnEl.textContent = '-'; warnEl.style.color = ''; }
+  ['cnt-profanity','cnt-threat','cnt-turns'].forEach(id => { const el = $(id); if (el) el.textContent = '0'; });
   $('db-toxic').textContent = '0회';
   $('db-ai-state').textContent = '담당자 응대 중';
   $('db-ai-state').style.color = '';
@@ -502,6 +862,22 @@ function resetStats() {
   summaryBtn.disabled = true;
   showBadge('normal');
   updateSystemBadge('normal-dot', '상담 중');
+}
+
+function resetRoutingBrief() {
+  routingPhase = true;
+  routingDone  = false;
+  const brief = $('routing-brief');
+  if (!brief) return;
+  brief.classList.add('hidden');
+  $('routing-badge').textContent = '분석 중';
+  $('routing-badge').classList.remove('done');
+  const srcBadge = $('routing-source-badge');
+  if (srcBadge) { srcBadge.textContent = ''; srcBadge.classList.add('hidden'); }
+  ['brief-type','brief-sub-type','brief-location','brief-urgency','brief-dept','brief-summary']
+    .forEach(id => { const el = $(id); if (el) el.textContent = '-'; });
+  $('routing-connecting').classList.add('hidden');
+  $('routing-connected').classList.add('hidden');
 }
 
 function levelColor(level) {
@@ -568,9 +944,9 @@ function fallbackResponse(type) {
     불법주정차: '불법주정차 과태료 이의신청은 고지서 수령일로부터 60일 이내에 교통행정과에 접수하실 수 있습니다. 이의신청서와 증빙자료가 필요합니다.',
     주민등록:   '주민등록등본은 정부24 홈페이지 또는 주민센터에서 발급받으실 수 있습니다. 온라인 발급 시 수수료는 무료입니다.',
     여권:       '여권 발급은 가까운 주민센터 민원여권과를 방문하시거나 온라인으로 신청하실 수 있습니다. 여권용 사진과 신분증이 필요합니다.',
-    쓰레기:     '쓰레기 무단투기는 120 다산콜센터 또는 구청 환경위생과에 신고하실 수 있습니다.',
+    쓰레기:     '쓰레기 무단투기는 화성시 콜센터(1577-4200) 또는 화성시청 환경위생과에 신고하실 수 있습니다.',
     소음:       '층간소음 민원은 층간소음이웃사이센터(1661-2642) 또는 구청 환경위생과에 접수하실 수 있습니다.',
-    기타:       '문의하신 내용은 담당 부서로 안내드리겠습니다. 주민센터 방문 또는 120 다산콜센터로 문의해 주시기 바랍니다.',
+    기타:       '문의하신 내용은 담당 부서로 안내드리겠습니다. 화성시 콜센터(1577-4200 또는 031-370-3900, 평일 08:30~18:30)로 문의해 주시기 바랍니다.',
   };
   return RESPONSES[type] || RESPONSES['기타'];
 }
