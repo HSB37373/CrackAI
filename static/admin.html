@@ -7,7 +7,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Pretendard', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 32px; }
     h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; color: #f8fafc; }
-    .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px; }
+    .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; }
+    /* 탭 */
+    .tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid #334155; padding-bottom: 0; }
+    .tab-btn { padding: 10px 24px; border: none; background: transparent; color: #64748b; font-size: 0.95rem; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: 0.2s; }
+    .tab-btn:hover { color: #e2e8f0; }
+    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    /* 공통 */
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; }
     .card h2 { font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 16px; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -16,93 +24,132 @@
     .stat-label { font-size: 0.88rem; color: #cbd5e1; }
     .stat-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
     .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-    .badge.ok  { background: #064e3b; color: #6ee7b7; }
-    .badge.warn{ background: #78350f; color: #fde68a; }
-    .badge.err { background: #7f1d1d; color: #fca5a5; }
-    .badge.blue{ background: #1e3a5f; color: #7dd3fc; }
+    .badge.ok   { background: #064e3b; color: #6ee7b7; }
+    .badge.warn { background: #78350f; color: #fde68a; }
+    .badge.err  { background: #7f1d1d; color: #fca5a5; }
+    .badge.blue { background: #1e3a5f; color: #7dd3fc; }
+    .badge.red  { background: #7f1d1d; color: #fca5a5; }
     button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-blue  { background: #2563eb; color: #fff; }
-    .btn-green { background: #059669; color: #fff; }
-    .btn-gray  { background: #334155; color: #e2e8f0; }
-    .btn-yellow{ background: #b45309; color: #fff; }
-    button:hover   { opacity: 0.85; }
-    button:disabled{ opacity: 0.4; cursor: not-allowed; }
+    .btn-blue   { background: #2563eb; color: #fff; }
+    .btn-green  { background: #059669; color: #fff; }
+    .btn-gray   { background: #334155; color: #e2e8f0; }
+    .btn-red    { background: #dc2626; color: #fff; }
+    button:hover    { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
     pre { background: #0a0f1e; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-size: 0.78rem; color: #a3e635; overflow-x: auto; max-height: 260px; overflow-y: auto; margin-top: 12px; white-space: pre-wrap; word-break: break-all; display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     th { text-align: left; font-size: 0.75rem; color: #64748b; padding: 6px 8px; border-bottom: 1px solid #334155; }
-    td { font-size: 0.83rem; padding: 8px; border-bottom: 1px solid #1a2233; vertical-align: top; }
+    td { font-size: 0.83rem; padding: 8px; border-bottom: 1px solid #1a2233; vertical-align: middle; }
     .loading { color: #64748b; font-size: 0.85rem; text-align: center; padding: 12px; }
     .section-title { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 28px 0 12px; }
     .progress-bar { height: 6px; background: #1e293b; border-radius: 99px; margin-top: 8px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #38bdf8); border-radius: 99px; transition: width 0.4s; }
     .tag { display: inline-block; background: #1e3a5f; color: #7dd3fc; border-radius: 4px; padding: 1px 6px; font-size: 0.73rem; margin-right: 3px; }
     .msg-preview { color: #94a3b8; font-size: 0.8rem; max-height: 3.2em; overflow: hidden; line-height: 1.6; }
+    .del-btn { width: auto; padding: 4px 12px; margin-top: 0; font-size: 0.78rem; background: #7f1d1d; color: #fca5a5; border-radius: 6px; }
+    .del-btn:hover { background: #dc2626; color: #fff; }
+    .ban-active { color: #f87171; font-weight: 600; }
+    .ban-none   { color: #64748b; }
+    .empty-msg  { color: #64748b; text-align: center; padding: 32px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>관리자 대시보드</h1>
-  <p class="sub">화성소통봇 데이터 수집 · RAG 지식베이스 관리</p>
+  <p class="sub">화성소통봇 데이터 수집 · RAG 지식베이스 관리 · 블랙리스트 관리</p>
 
-  <div class="grid">
-
-    <!-- 현황 카드 -->
-    <div class="card">
-      <h2>데이터 현황</h2>
-      <div id="faq-stats"><p class="loading">불러오는 중...</p></div>
-      <button class="btn-gray" onclick="loadStats()">새로고침</button>
-    </div>
-
-    <!-- 크롤러 실행 카드 -->
-    <div class="card">
-      <h2>화성소통봇 크롤러</h2>
-      <div class="stat-row">
-        <span class="stat-label">데이터 출처</span>
-        <span class="badge blue">화성소통봇 iChatResponse.jsp</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">대상 최상위 메뉴</span>
-        <span class="stat-value">9개</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">수집 방식</span>
-        <span class="stat-label">DFS 재귀 탐색 · hidden_query 기반</span>
-      </div>
-      <button class="btn-green" id="btn-test" onclick="runCrawl('test')">
-        ① 테스트 (세정만, ~2분)
-      </button>
-      <button class="btn-blue" id="btn-full" onclick="runCrawl('full')">
-        ② 전체 크롤링 (9개 메뉴, ~10분)
-      </button>
-      <button class="btn-gray" onclick="runReload()">③ 통계 재로드</button>
-      <pre id="log-output"></pre>
-    </div>
-
+  <!-- 탭 버튼 -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('crawl')">🕷️ 크롤링 시스템</button>
+    <button class="tab-btn" onclick="switchTab('blacklist')">🚫 블랙리스트</button>
   </div>
 
-  <p class="section-title">민원 FAQ 카테고리 (civil_service_faq.json)</p>
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>유형</th><th>민원명</th><th>담당부서</th><th>FAQ 수</th><th>안내문</th>
-        </tr>
-      </thead>
-      <tbody id="faq-table"><tr><td colspan="5" class="loading">불러오는 중...</td></tr></tbody>
-    </table>
+  <!-- 크롤링 탭 -->
+  <div class="tab-panel active" id="tab-crawl">
+    <div class="grid">
+      <div class="card">
+        <h2>데이터 현황</h2>
+        <div id="faq-stats"><p class="loading">불러오는 중...</p></div>
+        <button class="btn-gray" onclick="loadStats()">새로고침</button>
+      </div>
+      <div class="card">
+        <h2>화성소통봇 크롤러</h2>
+        <div class="stat-row">
+          <span class="stat-label">데이터 출처</span>
+          <span class="badge blue">화성소통봇 iChatResponse.jsp</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">대상 최상위 메뉴</span>
+          <span class="stat-value">9개</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">수집 방식</span>
+          <span class="stat-label">DFS 재귀 탐색 · hidden_query 기반</span>
+        </div>
+        <button class="btn-green" id="btn-test" onclick="runCrawl('test')">① 테스트 (세정만, ~2분)</button>
+        <button class="btn-blue"  id="btn-full" onclick="runCrawl('full')">② 전체 크롤링 (9개 메뉴, ~10분)</button>
+        <button class="btn-gray" onclick="runReload()">③ 통계 재로드</button>
+        <pre id="log-output"></pre>
+      </div>
+    </div>
+
+    <p class="section-title">민원 FAQ 카테고리 (civil_service_faq.json)</p>
+    <div class="card">
+      <table>
+        <thead><tr><th>유형</th><th>민원명</th><th>담당부서</th><th>FAQ 수</th><th>안내문</th></tr></thead>
+        <tbody id="faq-table"><tr><td colspan="5" class="loading">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+
+    <p class="section-title">화성소통봇 RAG 문서 미리보기</p>
+    <div class="card">
+      <div id="rag-stats" class="stat-row">
+        <span class="stat-label">수집된 RAG 문서</span>
+        <span class="stat-value" id="rag-count">-</span>
+      </div>
+      <button class="btn-gray" onclick="loadRagDocs()">RAG 문서 보기 (최대 20건)</button>
+      <div id="rag-docs" style="margin-top:12px;"></div>
+    </div>
   </div>
 
-  <p class="section-title">화성소통봇 RAG 문서 미리보기</p>
-  <div class="card">
-    <div id="rag-stats" class="stat-row">
-      <span class="stat-label">수집된 RAG 문서</span>
-      <span class="stat-value" id="rag-count">-</span>
+  <!-- 블랙리스트 탭 -->
+  <div class="tab-panel" id="tab-blacklist">
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="margin-bottom:0;">악성 민원인 목록</h2>
+        <button class="btn-gray" style="width:auto;padding:6px 16px;margin-top:0;" onclick="loadBlacklist()">새로고침</button>
+      </div>
+      <div id="bl-summary" style="margin-bottom:16px;"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>전화번호</th>
+            <th>6개월 내 이력</th>
+            <th>총 이력</th>
+            <th>마지막 발생</th>
+            <th>통화 제한</th>
+            <th>삭제</th>
+          </tr>
+        </thead>
+        <tbody id="bl-table"><tr><td colspan="7" class="loading">불러오는 중...</td></tr></tbody>
+      </table>
     </div>
-    <button class="btn-gray" onclick="loadRagDocs()">RAG 문서 보기 (최대 20건)</button>
-    <div id="rag-docs" style="margin-top:12px;"></div>
   </div>
 
 <script>
 const BASE = window.location.pathname.replace(/\/[^/]*$/, '');
+
+// ── 탭 전환 ───────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'blacklist') loadBlacklist();
+  if (name === 'crawl') loadStats();
+}
+
+// ── 크롤링 탭 ─────────────────────────────────────────────────────────────
 const log = (msg, ok) => {
   const el = document.getElementById('log-output');
   el.style.display = 'block';
@@ -113,13 +160,9 @@ const log = (msg, ok) => {
 
 async function loadStats() {
   const res = await fetch(`${BASE}/admin/faq-stats`).then(r => r.json());
-
-  // 현황 카드
   const ragCount = res.hscity_rag_count || 0;
   const cats = res.hscity_categories || {};
-  const catHtml = Object.entries(cats).map(([k, v]) =>
-    `<span class="tag">${k} ${v}</span>`).join('');
-
+  const catHtml = Object.entries(cats).map(([k, v]) => `<span class="tag">${k} ${v}</span>`).join('');
   document.getElementById('faq-stats').innerHTML = `
     <div class="stat-row">
       <span class="stat-label">FAQ 항목 (civil_service_faq)</span>
@@ -129,16 +172,12 @@ async function loadStats() {
       <span class="stat-label">RAG 문서 (화성소통봇)</span>
       <span class="stat-value ${ragCount > 0 ? '' : 'badge warn'}">${ragCount > 0 ? ragCount + '개' : '없음 (크롤링 필요)'}</span>
     </div>
-    ${ragCount > 0 ? `<div style="padding:10px 0; border-bottom:1px solid #1e293b;">${catHtml}</div>` : ''}
+    ${ragCount > 0 ? `<div style="padding:10px 0;border-bottom:1px solid #1e293b;">${catHtml}</div>` : ''}
   `;
   document.getElementById('rag-count').textContent = ragCount > 0 ? ragCount + '개' : '없음';
-
-  // FAQ 테이블
   document.getElementById('faq-table').innerHTML = res.stats.map(s => `
     <tr>
-      <td>${s.category}</td>
-      <td>${s.민원명}</td>
-      <td>${s.담당부서}</td>
+      <td>${s.category}</td><td>${s.민원명}</td><td>${s.담당부서}</td>
       <td><span class="badge ${s.faq_count > 0 ? 'ok' : 'warn'}">${s.faq_count}개</span></td>
       <td><span class="badge ${s.has_안내 ? 'ok' : 'warn'}">${s.has_안내 ? '있음' : '없음'}</span></td>
     </tr>
@@ -149,21 +188,13 @@ async function runCrawl(mode) {
   const testBtn = document.getElementById('btn-test');
   const fullBtn = document.getElementById('btn-full');
   testBtn.disabled = true; fullBtn.disabled = true;
-
   const endpoint = mode === 'test' ? `${BASE}/admin/crawl-test` : `${BASE}/admin/crawl`;
   const label = mode === 'test' ? '세정 테스트' : '전체 크롤링';
-
   document.getElementById('log-output').textContent = '';
   log(`화성소통봇 ${label} 시작...`);
-  log(mode === 'full' ? '전체 수집은 10분 이상 걸릴 수 있습니다. 잠시 기다려주세요.' : '');
-
+  if (mode === 'full') log('전체 수집은 10분 이상 걸릴 수 있습니다. 잠시 기다려주세요.');
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    }).then(r => r.json());
-
+    const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).then(r => r.json());
     if (res.stdout) log(res.stdout, res.ok);
     if (res.stderr) log('STDERR:\n' + res.stderr, false);
     if (!res.ok) log('크롤링 실패', false);
@@ -205,6 +236,56 @@ async function loadRagDocs() {
       </tbody>
     </table>
   `;
+}
+
+// ── 블랙리스트 탭 ─────────────────────────────────────────────────────────
+async function loadBlacklist() {
+  document.getElementById('bl-table').innerHTML = '<tr><td colspan="7" class="loading">불러오는 중...</td></tr>';
+  const res = await fetch(`${BASE}/admin/blacklist`).then(r => r.json());
+
+  document.getElementById('bl-summary').innerHTML = `
+    <span class="badge ${res.total > 0 ? 'err' : 'ok'}" style="font-size:0.85rem;padding:4px 14px;">
+      총 ${res.total}명 등록
+    </span>
+  `;
+
+  if (!res.callers || res.callers.length === 0) {
+    document.getElementById('bl-table').innerHTML = '<tr><td colspan="7" class="empty-msg">등록된 악성 민원인이 없습니다.</td></tr>';
+    return;
+  }
+
+  document.getElementById('bl-table').innerHTML = res.callers.map(c => {
+    const lastDate = c.last_offense ? c.last_offense.replace('T', ' ').substring(0, 16) : '-';
+    const banCell = c.is_banned
+      ? `<span class="ban-active">🚫 제한 중<br><small>${formatRemaining(c.remaining_seconds)}</small></span>`
+      : `<span class="ban-none">해제됨</span>`;
+    const offenseBadge = c.recent_offenses >= 3 ? 'err' : c.recent_offenses >= 1 ? 'warn' : 'ok';
+    return `
+      <tr>
+        <td>${c.name || '미확인'}</td>
+        <td><code style="color:#94a3b8">${c.phone}</code></td>
+        <td><span class="badge ${offenseBadge}">${c.recent_offenses}회</span></td>
+        <td style="color:#64748b">${c.total_offenses}회</td>
+        <td style="color:#64748b;font-size:0.8rem">${lastDate}</td>
+        <td>${banCell}</td>
+        <td><button class="del-btn" onclick="deleteCaller('${c.phone}')">삭제</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function formatRemaining(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} 남음`;
+}
+
+async function deleteCaller(phone) {
+  if (!confirm(`${phone} 를 블랙리스트에서 삭제하시겠습니까?`)) return;
+  const res = await fetch(`${BASE}/admin/blacklist/${encodeURIComponent(phone)}`, { method: 'DELETE' }).then(r => r.json());
+  if (res.ok) loadBlacklist();
+  else alert('삭제 실패: ' + (res.msg || '알 수 없는 오류'));
 }
 
 loadStats();
