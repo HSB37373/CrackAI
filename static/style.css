@@ -250,64 +250,53 @@ body {
 .status-badge.hidden   { display: none; }
 
 /* ── 위험도 게이지 ── */
-.risk-gauge-section {
+/* ── 경고 카운터 ── */
+.warning-counter-section {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 20px;
+  text-align: center;
 }
-.risk-label-row {
-  display: flex; align-items: baseline; gap: 6px;
-  font-size: 13px; color: var(--text-muted);
+.warning-counter-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.warning-dots {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.warning-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  transition: all 0.3s ease;
+}
+.warning-dot.active-1 { background: var(--caution); border-color: var(--caution); box-shadow: 0 0 12px rgba(210,153,34,0.5); }
+.warning-dot.active-2 { background: var(--danger);  border-color: var(--danger);  box-shadow: 0 0 12px rgba(248,81,73,0.5); }
+.warning-dot.active-3 { background: var(--critical); border-color: var(--critical); box-shadow: 0 0 12px rgba(255,123,114,0.7); animation: pulse 0.6s infinite; }
+.warning-counter-label {
+  font-size: 14px;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
-.risk-score-num {
-  font-size: 36px; font-weight: 800; color: var(--text);
-  transition: color var(--trans);
-}
-.risk-score-num.normal   { color: var(--normal); }
-.risk-score-num.caution  { color: var(--caution); }
-.risk-score-num.danger   { color: var(--danger); }
-.risk-score-num.critical { color: var(--critical); }
-
-.gauge-track {
-  position: relative;
-  height: 14px;
-  background: var(--surface);
-  border-radius: 7px;
-  overflow: visible;
-  border: 1px solid var(--border);
-}
-.gauge-fill {
-  height: 100%;
-  width: 0%;
-  border-radius: 7px;
-  background: var(--normal);
-  transition: width 0.4s ease, background 0.4s ease;
-}
-.gauge-marks {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-}
-.gauge-marks span {
-  position: absolute;
-  top: -18px;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-muted);
-}
-.gauge-marks span::after {
-  content: '';
-  position: absolute;
-  top: 18px; left: 50%;
-  width: 1px; height: 14px;
-  background: rgba(255,255,255,0.15);
+#warning-count-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .level-badge {
   display: inline-block;
-  margin-top: 10px;
+  margin-top: 4px;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
@@ -320,21 +309,6 @@ body {
 .level-badge.caution  { background: rgba(210,153,34,0.1); color: var(--caution); border-color: var(--caution); }
 .level-badge.danger   { background: rgba(248,81,73,0.1);  color: var(--danger);  border-color: var(--danger); }
 .level-badge.critical { background: rgba(255,123,114,0.1); color: var(--critical); border-color: var(--critical); animation: pulse 0.6s infinite; }
-
-/* ── 세부 지표 바 ── */
-.metrics { display: flex; flex-direction: column; gap: 10px; }
-.metric-item {}
-.metric-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-.metric-bar-track { height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
-.metric-bar-fill {
-  height: 100%; width: 0%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-.metric-bar-fill.profanity  { background: var(--caution); }
-.metric-bar-fill.threat     { background: var(--danger); }
-.metric-bar-fill.anger      { background: #ff7b72; }
-.metric-bar-fill.repetition { background: #a5d6ff; }
 
 /* ── 카운터 그리드 ── */
 .counter-grid {

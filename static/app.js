@@ -594,25 +594,31 @@ function speak(text) {
 
 // ── UI 업데이트 함수들 ────────────────────────────────────────────────────
 function updateAnalysisPanel(a) {
-  const score = a.risk_score || 0;
   const level = a.level || 'normal';
   lastLevel = level;
 
-  // 게이지
-  $('gauge-fill').style.width = score + '%';
-  $('gauge-fill').style.background = levelColor(level);
-  $('risk-score-num').textContent = score;
-  $('risk-score-num').className = 'risk-score-num ' + level;
+  // 경고 카운터 도트
+  const count  = a.profanity_warning_count || 0;
+  const thresh = a.ai_threshold ?? aiThreshold;
+  const wcn = $('warning-count-num'); if (wcn) wcn.textContent = count;
+  const wth = $('warning-threshold'); if (wth) wth.textContent = thresh || 3;
+
+  for (let i = 1; i <= 3; i++) {
+    const dot = $('dot-' + i);
+    if (!dot) continue;
+    dot.className = 'warning-dot';
+    if (i <= count) {
+      if (count === 1) dot.classList.add('active-1');
+      else if (count === 2) dot.classList.add('active-2');
+      else dot.classList.add('active-3');
+    }
+  }
 
   // 레벨 배지
   const lb = $('level-badge');
   lb.className = 'level-badge ' + level;
   lb.textContent = levelLabel(level);
 
-  // 세부 바
-  setBar('profanity', a.profanity_score || 0);
-  setBar('threat',    a.threat_score || 0);
-  setBar('anger',     a.anger_score || 0);
   // 카운터
   profanityTotal = a.profanity_total || profanityTotal;
   threatTotal    = a.threat_total    || threatTotal;
@@ -877,12 +883,9 @@ function resetStats() {
   const warnEl = $('db-warnings');
   if (warnEl) { warnEl.textContent = '-'; warnEl.style.color = ''; }
   ['cnt-profanity','cnt-threat','cnt-turns'].forEach(id => { const el = $(id); if (el) el.textContent = '0'; });
-  ['profanity','threat','anger'].forEach(n => { setBar(n, 0); });
-  $('gauge-fill').style.width = '0%';
-  $('risk-score-num').textContent = '0';
-  $('risk-score-num').className = 'risk-score-num';
-  $('level-badge').className = 'level-badge';
-  $('level-badge').textContent = '정상';
+  const wcn = $('warning-count-num'); if (wcn) wcn.textContent = '0';
+  for (let i = 1; i <= 3; i++) { const d = $('dot-' + i); if (d) d.className = 'warning-dot'; }
+  const lb = $('level-badge'); if (lb) { lb.className = 'level-badge'; lb.textContent = '정상'; }
   $('db-risk').textContent = '0점 · 정상';
   $('db-risk').className = 'summary-val risk-val normal';
   $('db-toxic').textContent = '0회';

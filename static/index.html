@@ -80,53 +80,18 @@
         <h2>실시간 분석</h2>
       </div>
 
-      <!-- 위험도 게이지 -->
-      <div class="risk-gauge-section">
-        <div class="risk-label-row">
-          <span>위험도 점수</span>
-          <span id="risk-score-num" class="risk-score-num">0</span>
-          <span>/ 100</span>
+      <!-- 경고 카운터 -->
+      <div class="warning-counter-section">
+        <div class="warning-counter-title">욕설 경고 현황</div>
+        <div class="warning-dots" id="warning-dots">
+          <div class="warning-dot" id="dot-1"></div>
+          <div class="warning-dot" id="dot-2"></div>
+          <div class="warning-dot" id="dot-3"></div>
         </div>
-        <div class="gauge-track">
-          <div class="gauge-fill" id="gauge-fill"></div>
-          <div class="gauge-marks">
-            <span style="left:30%">30</span>
-            <span style="left:60%">60</span>
-            <span style="left:80%">80</span>
-          </div>
+        <div class="warning-counter-label">
+          <span id="warning-count-num">0</span> / <span id="warning-threshold">3</span>회 — AI 전환 기준
         </div>
         <div class="level-badge" id="level-badge">정상</div>
-      </div>
-
-      <!-- 세부 지표 -->
-      <div class="metrics">
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>욕설·비속어</span>
-            <span id="profanity-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill profanity" id="profanity-bar"></div>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>위협 표현</span>
-            <span id="threat-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill threat" id="threat-bar"></div>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-header">
-            <span>분노 표현</span>
-            <span id="anger-pct">0%</span>
-          </div>
-          <div class="metric-bar-track">
-            <div class="metric-bar-fill anger" id="anger-bar"></div>
-          </div>
-        </div>
       </div>
 
       <!-- 감지 카운터 -->

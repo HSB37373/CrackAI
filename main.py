@@ -108,13 +108,15 @@ async def analyze(req: AnalyzeRequest):
         "timestamp": datetime.now().isoformat(),
     })
 
-    # AI 전환 조건 — 욕설 경고 횟수 기반
+    # AI 전환 조건 — 욕설 감지 횟수 기반 (3회)
     threshold = session["ai_threshold"]
     warning_count = session["profanity_warning_count"]
 
     should_activate = False
     if threshold == 0 and analysis["matched_bad_words"]:
         should_activate = True  # 즉시 전환 (3회 이상 전과)
+    elif "(STT검열)" in analysis.get("matched_bad_words", []):
+        should_activate = True  # STT 검열(***) 감지 시 즉시 전환
     elif threshold > 0 and warning_count >= threshold:
         should_activate = True
 
