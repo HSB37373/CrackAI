@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>민원 AI 보호 시스템</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>화성시 민원 AI 보호 시스템</title>
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
   <header class="header">
     <div class="header-left">
-      <span class="logo">🛡️</span>
-      <div>
-        <h1>민원 AI 보호 시스템</h1>
+      <div class="header-accent-bar"></div>
+      <div class="header-brand">
+        <span class="brand-city">Hwaseong Special City</span>
+        <h1>화성특례시 <em>민원 AI 보호 시스템</em></h1>
         <p>악성 민원 자동 감지 · AI 응대 전환 플랫폼</p>
       </div>
     </div>
@@ -31,9 +30,20 @@
     <!-- ■ 왼쪽: 민원인 통화 화면 -->
     <section class="panel caller-panel">
       <div class="panel-header">
-        <span class="panel-icon">📞</span>
         <h2>민원인 통화</h2>
+        <span class="panel-header-pill">CALL</span>
         <span class="call-indicator" id="call-indicator"></span>
+      </div>
+
+      <!-- 코리요 + 말풍선 -->
+      <div class="mascot-section">
+        <img
+          src="https://www.hscity.go.kr/webcontent/resrce/1/2021/5/18/02d48b20-8176-4b99-be76-553d87cb9418.jpg"
+          alt="화성시 마스코트 코리요"
+          class="mascot-img"
+          onerror="this.style.display='none'"
+        />
+        <div class="mascot-bubble">안녕하세요! 화성특례시<br>민원 AI 보호 시스템입니다 😊</div>
       </div>
 
       <div class="call-status-bar" id="call-status-bar">
@@ -42,25 +52,10 @@
       </div>
 
       <button class="mic-btn" id="mic-btn">
-        <span class="mic-icon">🎤</span>
         <span id="mic-label">통화 시작</span>
       </button>
 
-      <!-- 민원인 입력 -->
-      <div class="input-label">📞 민원인</div>
-      <div class="text-input-area">
-        <input type="text" id="text-input" placeholder="민원인 발화 입력..." />
-        <button id="send-btn">전송</button>
-      </div>
-
-      <!-- 상담사 입력 -->
-      <div class="input-label agent-label">🎧 상담사</div>
-      <div class="text-input-area">
-        <input type="text" id="agent-input" placeholder="상담사 응대 내용 입력..." />
-        <button id="agent-send-btn">전송</button>
-      </div>
-
-      <div class="chat-area" id="chat-area">
+<div class="chat-area" id="chat-area">
         <div class="chat-placeholder">통화를 시작하면 대화 내용이 여기에 표시됩니다.</div>
       </div>
 
@@ -76,8 +71,8 @@
     <!-- ■ 가운데: 실시간 분석 -->
     <section class="panel analysis-panel">
       <div class="panel-header">
-        <span class="panel-icon">📊</span>
         <h2>실시간 분석</h2>
+        <span class="panel-header-pill">LIVE</span>
       </div>
 
       <!-- 경고 카운터 -->
@@ -122,14 +117,17 @@
     <!-- ■ 오른쪽: 담당자 보호 대시보드 -->
     <section class="panel dashboard-panel">
       <div class="panel-header">
-        <span class="panel-icon">👮</span>
         <h2>담당자 보호 대시보드</h2>
+        <span class="panel-header-pill">GUARD</span>
       </div>
 
       <!-- AI 민원 분석 브리핑 카드 (라우팅 완료 시 표시) -->
       <div class="routing-brief hidden" id="routing-brief">
         <div class="routing-brief-header">
-          <span>🤖 AI 민원 분석</span>
+          <span class="ai-analysis-label">
+            <span class="ai-icon-badge">AI</span>
+            민원 분석
+          </span>
           <div style="display:flex;gap:6px;align-items:center">
             <span class="routing-source-badge hidden" id="routing-source-badge"></span>
             <span class="routing-badge" id="routing-badge">분석 중</span>

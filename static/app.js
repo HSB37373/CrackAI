@@ -715,13 +715,31 @@ function addLogEntry(text, a) {
   $('log-count').textContent = logEntries.length + '건';
 }
 
+const SENDER_BADGE = {
+  'AI 상담원':  { label: 'AI 상담원', cls: 'badge-ai' },
+  'AI 안내':    { label: 'AI 안내',   cls: 'badge-ai' },
+  '시스템':     { label: 'SYSTEM',    cls: 'badge-system' },
+  '시스템 안내':{ label: 'SYSTEM',    cls: 'badge-system' },
+  '⚠️ 시스템': { label: '경 고',     cls: 'badge-warn' },
+  '상담사':     { label: '상담사',    cls: 'badge-agent' },
+  '상담원':     { label: '상담원',    cls: 'badge-agent' },
+  '민원인':     { label: '민원인',    cls: 'badge-caller' },
+  '민원인 (입력 중)': { label: '입력 중', cls: 'badge-caller' },
+};
+
+function senderBadgeHtml(sender) {
+  const clean = sender.replace(/[🔔🤖🎧⚠️]/g, '').trim();
+  const cfg = SENDER_BADGE[clean] || { label: clean, cls: 'badge-system' };
+  return `<span class="msg-badge ${cfg.cls}">${cfg.label}</span>`;
+}
+
 function addChatMsg(type, sender, text, extra) {
   const empty = chatArea.querySelector('.chat-placeholder');
   if (empty) empty.remove();
 
   const el = document.createElement('div');
   el.className = `chat-msg ${type} ${extra}`;
-  el.innerHTML = `<div class="msg-sender">${sender}</div><div>${escHtml(text)}</div>`;
+  el.innerHTML = `<div class="msg-sender">${senderBadgeHtml(sender)}</div><div>${escHtml(text)}</div>`;
   chatArea.appendChild(el);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -733,7 +751,7 @@ function addChatbotLink() {
   const el = document.createElement('div');
   el.className = 'chat-msg ai';
   el.innerHTML = `
-    <div class="msg-sender">🔔 시스템</div>
+    <div class="msg-sender">${senderBadgeHtml('시스템')}</div>
     <div>음성 상담 대신 채팅 상담을 원하시면 화성시 민원 챗봇을 이용하실 수 있습니다.</div>
     <a class="chatbot-link-btn" href="https://g.answerny.ai/chatbot/projects/hscity/chatbot_hscity.html"
        target="_blank" rel="noopener noreferrer">
@@ -751,7 +769,7 @@ function showInterim(text) {
     interimEl.style.opacity = '0.45';
     chatArea.appendChild(interimEl);
   }
-  interimEl.innerHTML = `<div class="msg-sender">민원인 (입력 중)</div><div>${escHtml(text)}</div>`;
+  interimEl.innerHTML = `<div class="msg-sender">${senderBadgeHtml('민원인 (입력 중)')}</div><div>${escHtml(text)}</div>`;
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 function removeInterim() {
