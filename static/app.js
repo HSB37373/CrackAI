@@ -2,7 +2,7 @@
 
 // 현재 페이지 경로 기준 상대 URL — JupyterHub 프록시 경로에서도 동작
 const API = window.location.pathname.replace(/\/[^/]*$/, '') || '.';
-const SESSION_ID = 'sess_' + Date.now();
+let SESSION_ID = 'sess_' + Date.now();
 
 // ── 데모 모드 ─────────────────────────────────────────────────────────────
 // true  → 데모 시나리오 발화에 대해 GPT 분석 결과처럼 보이는 하드코딩 응답 사용
@@ -66,6 +66,8 @@ let routingDone  = false;  // 라우팅 브리핑 표시 완료 여부
 
 // TTS 재생 중 STT 피드백 루프 방지 플래그
 let suppressSTT  = false;
+// 발표 모드: 사용자가 수동으로 STT를 일시정지한 상태
+let presentationPaused = false;
 
 // ── DOM 참조 ──────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -89,10 +91,11 @@ function init() {
   clearChatArea();
 
   micBtn.addEventListener('click', toggleCall);
-  sendBtn.addEventListener('click', () => sendText());
-  textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
-  agentSendBtn.addEventListener('click', () => sendAgentText());
-  agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAgentText(); });
+  $('pause-btn').addEventListener('click', togglePresentationMode);
+  if (sendBtn) sendBtn.addEventListener('click', () => sendText());
+  if (textInput) textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
+  if (agentSendBtn) agentSendBtn.addEventListener('click', () => sendAgentText());
+  if (agentInput) agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAgentText(); });
   summaryBtn.addEventListener('click', generateSummary);
   $('demo-btn').addEventListener('click', runDemo);
   $('register-caller-btn').addEventListener('click', registerCaller);
@@ -130,7 +133,7 @@ function initSpeechRecognition() {
   };
 
   recognition.onend = () => {
-    if (isCallActive) {
+    if (isCallActive && !presentationPaused) {
       try { recognition.start(); } catch {}
     }
   };
@@ -229,6 +232,7 @@ function toggleCall() {
 
 function startCall() {
   isCallActive = true;
+  SESSION_ID = 'sess_' + Date.now(); // 통화마다 새 세션 — 욕설 카운터 누적 방지
   clearChatArea();
   resetStats();
   resetRoutingBrief();
@@ -246,6 +250,11 @@ function startCall() {
     callTimerEl.textContent = `${m}:${s}`;
   }, 1000);
 
+  presentationPaused = false;
+  $('pause-btn').classList.remove('hidden', 'paused');
+  $('pause-icon').textContent = '⏸';
+  $('pause-label').textContent = '발표 모드 (STT 일시정지)';
+
   // STT를 먼저 시작 — speak()가 suppressSTT로 결과를 차단하고, TTS 종료 후 자동 재개
   if (recognition) { try { recognition.start(); } catch {} }
 
@@ -254,8 +263,28 @@ function startCall() {
   speak(greeting);
 }
 
+function togglePresentationMode() {
+  if (!isCallActive) return;
+  presentationPaused = !presentationPaused;
+  const btn = $('pause-btn');
+  if (presentationPaused) {
+    btn.classList.add('paused');
+    $('pause-icon').textContent = '▶';
+    $('pause-label').textContent = '발표 중 (클릭하면 재개)';
+    if (recognition) { try { recognition.stop(); } catch {} }
+  } else {
+    btn.classList.remove('paused');
+    $('pause-icon').textContent = '⏸';
+    $('pause-label').textContent = '발표 모드 (STT 일시정지)';
+    if (recognition) { try { recognition.start(); } catch {} }
+  }
+}
+
 function stopCall() {
   isCallActive = false;
+  presentationPaused = false;
+  $('pause-btn').classList.add('hidden');
+  $('pause-btn').classList.remove('paused');
   if (recognition) { try { recognition.stop(); } catch {} }
   clearInterval(callTimer);
 
@@ -571,24 +600,32 @@ function speak(text) {
     suppressSTT = true;
     speechSynthesis.cancel();
 
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang  = 'ko-KR';
-    utt.rate  = 0.92;
-    utt.pitch = 1.05;
+    // Chrome 버그(~15초 후 끊김, onend 미발화) 방지: 문장 단위로 쪼개서 순차 발화
+    const sentences = text.match(/[^。.!?！？\n]+[。.!?！？\n]?/g) || [text];
+    let idx = 0;
 
-    const resume = () => {
-      setTimeout(() => {
-        suppressSTT = false;
-        if (isCallActive && recognition) {
-          try { recognition.start(); } catch {}
-        }
-        resolve();
-      }, 500);
+    const speakNext = () => {
+      if (idx >= sentences.length) {
+        setTimeout(() => {
+          suppressSTT = false;
+          if (isCallActive && recognition) {
+            try { recognition.start(); } catch {}
+          }
+          resolve();
+        }, 500);
+        return;
+      }
+      const utt = new SpeechSynthesisUtterance(sentences[idx++]);
+      utt.lang  = 'ko-KR';
+      utt.rate  = 0.92;
+      utt.pitch = 1.05;
+      utt.onend   = speakNext;
+      utt.onerror = speakNext;
+      speechSynthesis.speak(utt);
     };
-    utt.onend   = resume;
-    utt.onerror = resume;
 
-    speechSynthesis.speak(utt);
+    // Chrome: cancel() 직후 바로 speak()하면 첫 음절이 잘리고 onend가 안 터짐 → 150ms 대기
+    setTimeout(speakNext, 150);
   });
 }
 

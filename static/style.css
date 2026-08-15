@@ -367,6 +367,30 @@ body {
 .mic-btn.active .mic-icon { animation: pulse .7s infinite; }
 .mic-icon { font-size: 20px; }
 
+/* ── 발표 모드 버튼 ── */
+.pause-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed var(--border);
+  background: var(--surface);
+  color: var(--text-sub);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: var(--trans);
+  margin-top: 6px;
+}
+.pause-btn:hover { border-color: #F59E0B; color: #B45309; background: #FFFBEB; }
+.pause-btn.paused {
+  border-color: #F59E0B;
+  background: #FFFBEB;
+  color: #B45309;
+  box-shadow: 0 0 0 3px rgba(245,158,11,.15);
+}
+
 /* ── 입력 라벨 ── */
 .input-label {
   font-size: 11px;
