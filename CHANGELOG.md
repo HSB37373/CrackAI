@@ -11,9 +11,6 @@
 - **AI 전환 후 지역별 절차 안내** (`static/app.js`): AI 상담원 전환 후에도 수집된 지역 정보를 활용해 해당 구 기준 이의신청 절차(서류·기한·전화번호) 음성 안내
   - `DEMO_AI_COMPLAINT_RESPONSES`: 구별 하드코딩 AI 응답 (데모용, API 키 없이 동작)
   - `generateAIResponse()` 3단계 로직: ① 지역 미수집 시 질문 → ② DEMO_MODE + 지역 수집 시 하드코딩 응답 → ③ RAG/FAQ 폴백
-- **크롤러 카테고리 선택 옵션** (`scripts/crawl_hscity.py`): `--category` 인자 추가로 특정 카테고리만 크롤링 가능
-- **교통·차량 RAG 데이터** (`data/hscity_output/hscity_rag.jsonl`): 교통·차량 카테고리 36개 문서 추가 크롤링 (세정 27 + 교통 36 = 총 63개)
-
 ### 변경
 - `processUtterance()`: 지역 수집 단계(`collectingInfo=true`)일 때 `handleDistrictCollection()`으로 우선 분기
 - `triggerRouting()`: 민원 분류 완료 후 바로 연결하지 않고, `COMPLAINT_INFO_NEEDS`에 해당 유형이 있으면 지역 질문 선행
