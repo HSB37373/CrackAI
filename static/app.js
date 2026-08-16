@@ -366,7 +366,7 @@ async function triggerRouting(text, complaintType) {
 
   // 데모 모드: 미리 작성된 GPT 스타일 응답 사용
   if (DEMO_MODE && DEMO_ROUTES[text]) {
-    await sleep(600); // GPT 호출처럼 잠깐 딜레이
+    await sleep(1800); // GPT 호출처럼 잠깐 딜레이
     routeData = DEMO_ROUTES[text];
   } else {
     try {
@@ -420,7 +420,7 @@ async function triggerRouting(text, complaintType) {
   $('routing-dept-label').textContent = `${dept}에 연결 중...`;
   setCallStatus('연결 중...', 'normal');
 
-  await sleep(2200);
+  await sleep(3500);
 
   // 연결 완료
   $('routing-connecting').classList.add('hidden');
@@ -485,9 +485,12 @@ async function activateAI(score) {
   callIndicator.classList.add('ai-mode');
   updateSystemBadge('ai-dot', 'AI 상담 전환 중');
 
-  const systemMsgShort = `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
+  // TTS용: 이모지·특수기호 제거, 전체 내용 음성 안내
+  const systemMsgTTS = score >= 80
+    ? `반복적인 심각한 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다. 반복 발생 시 1회 1시간, 2회 6시간, 3회 이상 24시간으로 늘어납니다. 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터로 연락해 주시기 바랍니다.`
+    : `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다. 반복 발생 시 1회 1시간, 2회 6시간, 3회 이상 24시간으로 늘어납니다. 상담원 연결이 필요하시면 제한 해제 후 화성시 콜센터로 연락해 주시기 바랍니다.`;
   addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
-  await speak(systemMsgShort);
+  await speak(systemMsgTTS);
   addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
   await speak(aiGreeting);
   addChatbotLink();
@@ -500,7 +503,7 @@ async function activateAI(score) {
 
 // ── 모니터링 단계 상담원 응답 ──────────────────────────────────────────────
 async function generateAgentResponse(question, complaintType) {
-  await sleep(800);
+  await sleep(2000);
 
   let response;
 
@@ -534,7 +537,7 @@ async function generateAgentResponse(question, complaintType) {
 
 // ── AI 응답 생성 ──────────────────────────────────────────────────────────
 async function generateAIResponse(question, complaintType) {
-  await sleep(600);
+  await sleep(2000);
 
   let response;
   try {
@@ -567,12 +570,15 @@ function speak(text) {
     suppressSTT = true;
     speechSynthesis.cancel();
 
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang  = 'ko-KR';
-    utt.rate  = 0.92;
-    utt.pitch = 1.05;
+    const sentences = text.match(/[^。.!?！？\n]+[。.!?！？\n]?/g) || [text];
+    let idx = 0;
+    let done = false;
+    let timer = null;
 
-    const resume = () => {
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
       setTimeout(() => {
         suppressSTT = false;
         if (isCallActive && recognition) {
@@ -581,10 +587,28 @@ function speak(text) {
         resolve();
       }, 500);
     };
-    utt.onend   = resume;
-    utt.onerror = resume;
 
-    speechSynthesis.speak(utt);
+    const next = () => {
+      clearTimeout(timer); // 이전 타이머 반드시 취소 후 진행
+      if (done) return;
+      if (idx >= sentences.length) { finish(); return; }
+
+      const sentence = sentences[idx++];
+      const utt = new SpeechSynthesisUtterance(sentence);
+      utt.lang  = 'ko-KR';
+      utt.rate  = 0.92;
+      utt.pitch = 1.05;
+      utt.onend   = next;
+      utt.onerror = next;
+
+      // onend 미발화 대비 — 글자수 × 250ms + 3초 여유
+      timer = setTimeout(next, sentence.length * 250 + 3000);
+
+      speechSynthesis.speak(utt);
+    };
+
+    // Chrome: cancel() 직후 바로 speak()하면 첫 음절이 잘리고 onend가 안 터짐 → 150ms 대기
+    setTimeout(next, 150);
   });
 }
 
