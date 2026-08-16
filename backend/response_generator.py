@@ -107,7 +107,7 @@ def _search_rag(question: str, top_k: int = 3, complaint_type: str = "") -> list
     for doc in docs:
         path    = doc.get("path", "")
         title   = doc.get("title", "")
-        content = doc.get("content", "")[:400]
+        content = doc.get("content", "")[:800]
         cat     = doc.get("category", "")
 
         path_norm    = _normalize(path)
@@ -170,6 +170,15 @@ def _tts_clean(text: str) -> str:
     text = re.sub(r"<[^>]*기관정보[^>]*>", "", text)
     # 점 목록 기호 정리
     text = re.sub(r"[•·◆◇▶▷●○■□]", "", text)
+    # 챗봇 UI 전용 문구 제거 (TTS 부적합)
+    chatbot_ui_phrases = [
+        r"옆으로 넘겨\s*정보를\s*확인해\s*주시기\s*바랍니다[.。]?",
+        r"화면을\s*스크롤하여\s*확인해\s*주시기\s*바랍니다[.。]?",
+        r"아래\s*버튼을\s*눌러\s*확인하세요[.。]?",
+        r"자세한\s*내용은\s*버튼을\s*클릭[^.。]*[.。]?",
+    ]
+    for phrase in chatbot_ui_phrases:
+        text = re.sub(phrase, "", text)
     # 연속 공백·줄바꿈 정리
     text = re.sub(r"\n{2,}", "\n", text)
     text = re.sub(r"[ \t]+", " ", text)
@@ -189,7 +198,15 @@ def _format_rag_answer(docs: list[dict]) -> str:
     title = _tts_clean(best.get("title", ""))
 
     intro = f"{title} 안내입니다. " if title else ""
-    return (intro + content)[:500]
+    combined = intro + content
+    if len(combined) <= 1000:
+        return combined
+    truncated = combined[:1000]
+    for pat in ['다. ', '요. ', '다.', '요.']:
+        idx = truncated.rfind(pat)
+        if idx > len(truncated) // 2:
+            return truncated[:idx + len(pat)].strip()
+    return truncated
 
 
 # ── 공개 API ──────────────────────────────────────────────────────────────────

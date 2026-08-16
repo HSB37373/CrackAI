@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>화성시 민원 AI 자동연결</title>
+  <link rel="stylesheet" href="static/citizen.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-brand">
+        <span class="brand-city">Hwaseong Special City</span>
+        <h1>화성특례시 <em>민원 AI 자동연결</em></h1>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="status-card" id="status-card">
+        <div class="status-icon" id="status-icon">📞</div>
+        <div class="status-text" id="status-text">통화를 시작하려면 버튼을 눌러주세요</div>
+        <div class="status-sub" id="status-sub"></div>
+      </div>
+
+      <div class="call-box">
+        <div class="wave-container" id="wave-container">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+
+        <div class="transcript-box" id="transcript-box">
+          <div class="transcript-placeholder">말씀하신 내용이 여기에 표시됩니다.</div>
+        </div>
+
+        <button class="call-btn" id="call-btn">
+          <span id="call-btn-label">통화 시작</span>
+        </button>
+
+        <button class="stop-tts-btn hidden" id="stop-tts-btn">
+          ⏹ 음성 중지
+        </button>
+      </div>
+
+      <div class="result-card hidden" id="result-card">
+        <div class="result-title">안내 결과</div>
+        <div class="result-row">
+          <span class="result-key">민원 종류</span>
+          <span class="result-val" id="res-type">-</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">담당 지역</span>
+          <span class="result-val" id="res-location">-</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">담당 부서</span>
+          <span class="result-val" id="res-dept">-</span>
+        </div>
+        <div class="result-row">
+          <span class="result-key">전화번호</span>
+          <span class="result-val result-phone" id="res-phone">-</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="static/citizen.js"></script>
+</body>
+</html>

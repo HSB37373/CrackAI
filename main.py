@@ -287,6 +287,11 @@ async def admin_page():
     return FileResponse("static/admin.html")
 
 
+@app.get("/citizen")
+async def citizen_page():
+    return FileResponse("static/citizen.html")
+
+
 @app.get("/admin/faq-stats")
 async def admin_faq_stats():
     from pathlib import Path as P

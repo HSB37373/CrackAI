@@ -384,6 +384,22 @@ body {
   margin-top: 6px;
 }
 .pause-btn:hover { border-color: #F59E0B; color: #B45309; background: #FFFBEB; }
+.stop-tts-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #EF4444;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: var(--trans);
+  margin-top: 6px;
+}
+.stop-tts-btn:hover { background: #FEE2E2; border-color: #B91C1C; }
 .pause-btn.paused {
   border-color: #F59E0B;
   background: #FFFBEB;

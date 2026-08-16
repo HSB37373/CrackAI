@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [2026-08-16] — 구별 담당부서 자동 연결 · 교통 RAG 데이터 추가
+
+### 추가
+- **구별 담당부서 자동 연결** (`static/app.js`): 민원 유형(불법주정차)에 따라 AI가 지역(구·읍·면)을 물어보고 해당 담당부서 직통번호로 자동 연결
+  - `COMPLAINT_INFO_NEEDS`: 민원 유형별 필요 정보 질문 매핑
+  - `DISTRICT_DEPT_MAP`: 구·읍 키워드 → 담당부서 + 전화번호 매핑 (만세구·효행구·병점구·동탄구·향남·남양·동탄·병점·발안)
+  - `handleDistrictCollection()`: 민원인 발화에서 지역 키워드 추출 후 연결 처리
+  - `completeConnection()`: 담당부서 연결 애니메이션·메시지 공통 함수 분리
+- **AI 전환 후 지역별 절차 안내** (`static/app.js`): AI 상담원 전환 후에도 수집된 지역 정보를 활용해 해당 구 기준 이의신청 절차(서류·기한·전화번호) 음성 안내
+  - `DEMO_AI_COMPLAINT_RESPONSES`: 구별 하드코딩 AI 응답 (데모용, API 키 없이 동작)
+  - `generateAIResponse()` 3단계 로직: ① 지역 미수집 시 질문 → ② DEMO_MODE + 지역 수집 시 하드코딩 응답 → ③ RAG/FAQ 폴백
+
+### 변경
+- `processUtterance()`: 지역 수집 단계(`collectingInfo=true`)일 때 `handleDistrictCollection()`으로 우선 분기
+- `triggerRouting()`: 민원 분류 완료 후 바로 연결하지 않고, `COMPLAINT_INFO_NEEDS`에 해당 유형이 있으면 지역 질문 선행
+- `resetRoutingBrief()`: 초기화 시 `collectingInfo`, `collectComplaintType`, `collectedDistrict` 상태 리셋 추가
+
+---
+
 ## [2026-08-14] — 악성 민원 관리 강화 · 안정성 개선
 
 ### 추가
