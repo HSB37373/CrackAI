@@ -31,6 +31,20 @@ const DEMO_ROUTES = {
   },
 };
 
+// AI 모드 데모 응답 — 지역별 민원 처리 안내 (하드코딩)
+const DEMO_AI_COMPLAINT_RESPONSES = {
+  '불법주정차': {
+    '만세구': '만세구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-1429입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 교통행정과에 방문하시거나 정부24 온라인으로 제출하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
+    '효행구': '효행구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-7536입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 제출하셔야 하며 처리 기간은 14일 이내입니다.',
+    '병점구': '병점구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-4246입니다. 이의신청서와 차량등록증 사본, 증빙사진을 첨부하여 60일 이내에 제출해 주세요. 처리 기간은 14일입니다.',
+    '동탄구': '동탄구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-6980입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진이며 60일 이내에 제출하셔야 합니다. 처리 기간은 14일 이내입니다.',
+    '향남':   '향남읍은 효행구에 해당합니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-7536입니다. 이의신청서, 차량등록증 사본, 현장 증빙사진을 과태료 고지서 수령일로부터 60일 이내에 제출해 주시면 됩니다. 처리 기간은 14일 이내입니다.',
+    '남양':   '남양읍은 만세구에 해당합니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-1429입니다. 이의신청서와 증빙서류를 60일 이내에 제출하시면 됩니다.',
+    '동탄':   '동탄 지역 담당 부서는 경제교통과이며 전화번호는 031-5189-6980입니다. 이의신청서, 차량등록증 사본, 현장 증빙사진을 60일 이내에 제출해 주세요.',
+    '병점':   '병점 지역 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-4246입니다. 이의신청서와 증빙서류를 60일 이내에 제출하시면 됩니다.',
+  },
+};
+
 // 데모 상담원 응답 — 민원인 발화 → 상담원이 할 법한 답변
 const DEMO_AGENT_RESPONSES = {
   '서류는 뭐가 필요한가요?':
@@ -63,6 +77,31 @@ let banTimerInterval = null;
 // AI 라우팅 단계
 let routingPhase = true;   // 첫 발화 전까지 true
 let routingDone  = false;  // 라우팅 브리핑 표시 완료 여부
+
+// 추가 정보 수집 단계 (지역/구 물어보는 중)
+let collectingInfo      = false;
+let collectComplaintType = '';
+let collectedDistrict   = ''; // 수집된 지역 정보 (라우팅·AI 모드 공통 사용)
+
+// ── 민원 유형별 추가 정보 수집 정의 ──────────────────────────────────────────
+const COMPLAINT_INFO_NEEDS = {
+  '불법주정차': '거주하시는 구를 말씀해 주세요. 만세구, 효행구, 병점구, 동탄구 중 해당 구를 말씀해 주시거나, 향남읍, 남양읍 등 읍·면 단위로 말씀해 주셔도 됩니다.',
+};
+
+// 지역 키워드 → 담당부서 + 전화번호 (FAQ 데이터 기반)
+const DISTRICT_DEPT_MAP = {
+  '불법주정차': {
+    '만세구':  { dept: '경제교통과',                      phone: '031-5189-1429' },
+    '효행구':  { dept: '안전건설과(교통시설·교통지도)', phone: '031-5189-7536' },
+    '병점구':  { dept: '안전건설과(교통시설·교통지도)', phone: '031-5189-4246' },
+    '동탄구':  { dept: '경제교통과',                      phone: '031-5189-6980' },
+    '향남':    { dept: '안전건설과(교통시설·교통지도)', phone: '031-5189-7536' }, // 효행구
+    '남양':    { dept: '경제교통과',                      phone: '031-5189-1429' }, // 만세구
+    '동탄':    { dept: '경제교통과',                      phone: '031-5189-6980' }, // 동탄구
+    '병점':    { dept: '안전건설과(교통시설·교통지도)', phone: '031-5189-4246' }, // 병점구
+    '발안':    { dept: '안전건설과(교통시설·교통지도)', phone: '031-5189-7536' }, // 효행구
+  },
+};
 
 // TTS 재생 중 STT 피드백 루프 방지 플래그
 let suppressSTT  = false;
@@ -319,6 +358,12 @@ async function processUtterance(text) {
   removeInterim();
   addChatMsg('caller', '민원인', text, 'normal');
 
+  // 지역 정보 수집 중이면 일반 분석 스킵하고 지역 매핑만 처리
+  if (collectingInfo) {
+    await handleDistrictCollection(text);
+    return;
+  }
+
   let analysis;
   try {
     const res = await fetch(`${API}/analyze`, {
@@ -438,26 +483,77 @@ async function triggerRouting(text, complaintType) {
   addChatMsg('ai', '🔔 시스템 안내', legalMsg, '');
   await speak(legalMsg);
 
-  // TTS: 담당 부서 연결 안내
   const dept = routeData.department || '담당';
-  const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
-  addChatMsg('ai', '🔔 AI 안내', connMsg, '');
-  await speak(connMsg);
+  const infoQuestion = COMPLAINT_INFO_NEEDS[routeData.complaint_type];
 
-  // 연결 중 애니메이션
+  if (infoQuestion) {
+    // 추가 정보(지역) 수집 단계로 진입
+    const askMsg = `${routeData.complaint_type} 민원이 접수되었습니다. 담당 부서로 바로 연결해 드리겠습니다. ${infoQuestion}`;
+    addChatMsg('ai', '🔔 AI 안내', askMsg, '');
+    await speak(askMsg);
+    collectingInfo = true;
+    collectComplaintType = routeData.complaint_type;
+    // routingPhase는 연결 완료 후 종료
+  } else {
+    // 추가 정보 불필요 → 바로 연결
+    const connMsg = `${dept} 상담원에게 연결해드리겠습니다. 잠시만 기다려 주세요.`;
+    addChatMsg('ai', '🔔 AI 안내', connMsg, '');
+    await speak(connMsg);
+    await completeConnection(dept, '');
+  }
+}
+
+// ── 지역 정보 수집 후 담당 부서 연결 ─────────────────────────────────────────
+async function handleDistrictCollection(text) {
+  collectingInfo = false;
+
+  const deptMap = DISTRICT_DEPT_MAP[collectComplaintType];
+  let matched = null;
+  if (deptMap) {
+    for (const [keyword, info] of Object.entries(deptMap)) {
+      if (text.includes(keyword)) {
+        matched = { district: keyword, ...info };
+        break;
+      }
+    }
+  }
+
+  if (matched) {
+    collectedDistrict = matched.district; // 지역 저장
+    if (aiModeActive) {
+      // AI 모드 중 지역 수집 → 바로 절차 안내
+      await generateAIResponse('이의신청 방법 알려주세요', collectComplaintType);
+    } else {
+      // 라우팅 단계 → 담당 부서 연결
+      const connMsg = `${matched.district} 지역 담당 부서인 ${matched.dept}로 연결해 드리겠습니다. 잠시만 기다려 주세요.`;
+      addChatMsg('ai', '🔔 AI 안내', connMsg, '');
+      await speak(connMsg);
+      await completeConnection(matched.dept, matched.phone);
+    }
+  } else {
+    // 지역 매핑 실패 → 기본 부서로 연결
+    const fallbackMsg = `말씀하신 지역의 담당 상담원에게 연결해 드리겠습니다.`;
+    addChatMsg('ai', '🔔 AI 안내', fallbackMsg, '');
+    await speak(fallbackMsg);
+    if (!aiModeActive) await completeConnection(lastDept, '');
+  }
+}
+
+// ── 담당 부서 연결 완료 처리 ─────────────────────────────────────────────────
+async function completeConnection(dept, phone) {
   $('routing-connecting').classList.remove('hidden');
   $('routing-dept-label').textContent = `${dept}에 연결 중...`;
   setCallStatus('연결 중...', 'normal');
 
   await sleep(2200);
 
-  // 연결 완료
   $('routing-connecting').classList.add('hidden');
   $('routing-connected').classList.remove('hidden');
   setCallStatus('모니터링 중', 'active');
-  addChatMsg('ai', '🔔 시스템', `✅ ${dept} 상담원에게 연결되었습니다. 통화 모니터링을 시작합니다.`, '');
 
-  // 라우팅 단계 종료 → 악성 민원 모니터링 단계로 전환
+  const phoneStr = phone ? ` (${phone})` : '';
+  addChatMsg('ai', '🔔 시스템', `✅ ${dept}${phoneStr} 담당 상담원에게 연결되었습니다. 통화 모니터링을 시작합니다.`, '');
+
   routingPhase = false;
 }
 
@@ -569,6 +665,30 @@ async function generateAgentResponse(question, complaintType) {
 async function generateAIResponse(question, complaintType) {
   await sleep(600);
 
+  // ① 지역 정보가 필요하고 아직 수집 안 된 경우 → 지역 먼저 물어보기
+  const infoQuestion = COMPLAINT_INFO_NEEDS[complaintType];
+  if (infoQuestion && !collectedDistrict) {
+    const askMsg = `${complaintType} 관련 담당 부서로 안내해 드리겠습니다. ${infoQuestion}`;
+    addChatMsg('ai', '🤖 AI 상담원', askMsg, '');
+    await speak(askMsg);
+    collectingInfo = true;
+    collectComplaintType = complaintType;
+    return;
+  }
+
+  // ② 데모 모드 + 지역 수집 완료 → 지역별 하드코딩 응답
+  if (DEMO_MODE && collectedDistrict && DEMO_AI_COMPLAINT_RESPONSES[complaintType]) {
+    const distMap = DEMO_AI_COMPLAINT_RESPONSES[complaintType];
+    for (const [keyword, resp] of Object.entries(distMap)) {
+      if (collectedDistrict.includes(keyword) || keyword.includes(collectedDistrict)) {
+        addChatMsg('ai', '🤖 AI 상담원', resp, '');
+        speak(resp);
+        return;
+      }
+    }
+  }
+
+  // ③ RAG / FAQ 기반 응답 (기본)
   let response;
   try {
     const res = await fetch(`${API}/respond`, {
@@ -959,6 +1079,9 @@ function resetStats() {
 function resetRoutingBrief() {
   routingPhase = true;
   routingDone  = false;
+  collectingInfo = false;
+  collectComplaintType = '';
+  collectedDistrict = '';
   const brief = $('routing-brief');
   if (!brief) return;
   brief.classList.add('hidden');

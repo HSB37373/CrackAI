@@ -371,8 +371,9 @@ def print_report(nodes: dict, edges: list, failed: list):
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser(description="화성소통봇 크롤러")
-    ap.add_argument("--resume", action="store_true", help="체크포인트에서 재시작")
-    ap.add_argument("--test",   action="store_true", help="세정 메뉴만 테스트")
+    ap.add_argument("--resume",   action="store_true", help="체크포인트에서 재시작")
+    ap.add_argument("--test",     action="store_true", help="세정 메뉴만 테스트")
+    ap.add_argument("--category", type=str, default="", help="특정 카테고리만 크롤링 (예: 교통·차량)")
     args = ap.parse_args()
 
     print("=" * 52)
@@ -384,6 +385,14 @@ def main():
     if args.test:
         roots = [{"name": "세정", "query": "btn_최상위_세정_default"}]
         print("[TEST] 세정 메뉴만 탐색")
+    elif args.category:
+        matched = [r for r in FALLBACK_ROOTS if args.category in r["name"]]
+        if not matched:
+            print(f"[ERROR] '{args.category}' 카테고리를 찾을 수 없습니다.")
+            print(f"사용 가능: {[r['name'] for r in FALLBACK_ROOTS]}")
+            sys.exit(1)
+        roots = matched
+        print(f"[CATEGORY] '{args.category}' 메뉴만 탐색")
     else:
         roots = discover_roots(sess, sk)
 
