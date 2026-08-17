@@ -4,12 +4,8 @@
 const API = window.location.pathname.replace(/\/[^/]*$/, '') || '.';
 let SESSION_ID = 'sess_' + Date.now();
 
-// ── 데모 모드 ─────────────────────────────────────────────────────────────
-// true  → 데모 시나리오 발화에 대해 GPT 분석 결과처럼 보이는 하드코딩 응답 사용
-// false → 실제 /route API 호출 (OPENAI_API_KEY 있으면 GPT, 없으면 룰 기반)
 const DEMO_MODE = true;
 
-// 데모 발화 → 미리 작성된 GPT 스타일 분석 결과
 const DEMO_ROUTES = {
   '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.': {
     complaint_type: '불법주정차',
@@ -20,24 +16,14 @@ const DEMO_ROUTES = {
     summary:        '동탄 지역에서 주차위반 과태료 고지서를 수령한 시민이 이의신청 방법 및 필요 절차에 대한 안내를 요청하고 있음.',
     source:         'gpt',
   },
-  '동탄 ○○동에 밤마다 불법주차가 너무 많아요. 특히 어린이집 앞이라 위험합니다.': {
-    complaint_type: '불법주정차',
-    sub_type:       '어린이보호구역 / 반복 불법주정차',
-    location:       '동탄 ○○동',
-    urgency:        '높음',
-    department:     '교통행정과',
-    summary:        '어린이집 인근 어린이보호구역에서 야간 불법주정차가 반복되어 보행 안전에 위험이 발생하고 있음. 신속한 현장 단속 및 계도 조치 필요.',
-    source:         'gpt',
-  },
 };
 
-// AI 모드 데모 응답 — 지역별 민원 처리 안내 (하드코딩)
 const DEMO_AI_COMPLAINT_RESPONSES = {
   '불법주정차': {
-    '만세구': '만세구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-1223입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 교통행정과에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
-    '효행구': '효행구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-7555입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 14일 이내입니다.',
-    '병점구': '병점구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-4791입니다. 이의신청서와 차량등록증 사본, 증빙사진을 첨부하여 60일 이내에 제출해 주세요. 처리 기간은 14일입니다.',
-    '동탄구': '동탄구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-6980입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진이며 60일 이내에 제출하셔야 합니다. 처리 기간은 14일 이내입니다.',
+    '만세구': '만세구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-1223입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
+    '효행구': '효행구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-7555입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
+    '병점구': '병점구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-4791입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
+    '동탄구': '동탄구 지역 불법주정차 이의신청 안내입니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-6980입니다. 이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 현장 증빙사진입니다. 과태료 고지서를 받으신 날로부터 60일 이내에 방문 또는 전화로 접수하시면 됩니다. 처리 기간은 접수 후 14일 이내입니다.',
     '향남':   '향남읍은 효행구에 해당합니다. 담당 부서는 안전건설과 교통시설·교통지도이며 전화번호는 031-5189-7555입니다. 이의신청서, 차량등록증 사본, 현장 증빙사진을 60일 이내에 제출해 주시면 됩니다. 처리 기간은 14일 이내입니다.',
     '남양':   '남양읍은 만세구에 해당합니다. 담당 부서는 경제교통과이며 전화번호는 031-5189-1223입니다. 이의신청서와 증빙서류를 60일 이내에 제출하시면 됩니다.',
     '동탄':   '동탄 지역 담당 부서는 경제교통과이며 전화번호는 031-5189-6980입니다. 이의신청서, 차량등록증 사본, 현장 증빙사진을 60일 이내에 제출해 주세요.',
@@ -45,7 +31,6 @@ const DEMO_AI_COMPLAINT_RESPONSES = {
   },
 };
 
-// 데모 상담원 응답 — 민원인 발화 → 상담원이 할 법한 답변
 const DEMO_AGENT_RESPONSES = {
   '서류는 뭐가 필요한가요?':
     '이의신청에 필요한 서류는 이의신청서, 차량등록증 사본, 그리고 증빙자료(현장 사진 등)입니다. 고지서 수령 후 60일 이내에 신청하셔야 하며, 교통행정과 방문 또는 전화로 접수하실 수 있습니다.',
@@ -144,7 +129,6 @@ function init() {
   if (agentSendBtn) agentSendBtn.addEventListener('click', () => sendAgentText());
   if (agentInput) agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAgentText(); });
   summaryBtn.addEventListener('click', generateSummary);
-  $('demo-btn').addEventListener('click', runDemo);
   $('register-caller-btn').addEventListener('click', registerCaller);
   $('caller-phone-input').addEventListener('keydown', e => { if (e.key === 'Enter') registerCaller(); });
 
@@ -448,9 +432,8 @@ async function triggerRouting(text, complaintType) {
     source: 'rule',
   };
 
-  // 데모 모드: 미리 작성된 GPT 스타일 응답 사용
   if (DEMO_MODE && DEMO_ROUTES[text]) {
-    await sleep(600); // GPT 호출처럼 잠깐 딜레이
+    await sleep(600);
     routeData = DEMO_ROUTES[text];
   } else {
     try {
@@ -632,11 +615,11 @@ async function activateAI(score) {
     : `반복적인 폭언이 감지되어 AI 음성 상담으로 전환합니다. 이번 통화 종료 후 상담원 직접 통화가 ${banHours}시간 제한됩니다.`;
   addChatMsg('ai', '🔔 시스템 안내', systemMsg, '');
   await speak(systemMsgShort);
+  addChatbotLink();
+  const chatbotGuide = '음성 상담이 불편하신 분들을 위해 화성시 민원 챗봇 서비스도 운영하고 있습니다. 오늘 상담 내용이나 챗봇 링크를 문자로 받아보고 싶으시다면, 상담을 종료하기 전 일 번을 눌러주세요.';
+  await speak(chatbotGuide);
   addChatMsg('ai', '🤖 AI 상담원', aiGreeting, '');
   await speak(aiGreeting);
-  addChatbotLink();
-  const chatbotGuide = '채팅 상담을 원하시면 화면에 표시된 화성시 민원 챗봇 링크를 이용해 주세요.';
-  await speak(chatbotGuide);
 
   $('db-ai-state').textContent = '🤖 AI 전환됨';
   $('db-ai-state').style.color = 'var(--ai)';
@@ -648,7 +631,6 @@ async function generateAgentResponse(question, complaintType) {
 
   let response;
 
-  // 데모 모드: 발화별 하드코딩 응답 우선
   if (DEMO_MODE && DEMO_AGENT_RESPONSES[question]) {
     response = DEMO_AGENT_RESPONSES[question];
   } else {
@@ -954,7 +936,7 @@ function addChatbotLink() {
   el.className = 'chat-msg ai';
   el.innerHTML = `
     <div class="msg-sender">${senderBadgeHtml('시스템')}</div>
-    <div>음성 상담 대신 채팅 상담을 원하시면 화성시 민원 챗봇을 이용하실 수 있습니다.</div>
+    <div>음성 상담이 불편하신 분들을 위해 화성시 민원 챗봇 서비스도 운영하고 있습니다. 오늘 상담 내용이나 챗봇 링크를 문자로 받아보고 싶으시다면, 상담을 종료하기 전 1번을 눌러주세요.</div>
     <a class="chatbot-link-btn" href="https://g.answerny.ai/chatbot/projects/hscity/chatbot_hscity.html"
        target="_blank" rel="noopener noreferrer">
       💬 화성시 민원 챗봇 바로가기 →
@@ -1024,47 +1006,6 @@ async function generateSummary() {
 
   summaryBtn.textContent = '📋 상담 요약 보고서 생성';
   summaryBtn.disabled = false;
-}
-
-// ── 데모 시나리오 ─────────────────────────────────────────────────────────
-const DEMO_SCRIPT = [
-  // ① 라우팅 단계: 자연어 발화 → AI 분류 → 상담원 연결
-  { delay: 0,    text: '제가 어제 동탄에서 주차위반 딱지를 받았는데 이거 이의신청을 어떻게 해야 하는지 모르겠어요.' },
-  // ② 라우팅 완료 후 모니터링 단계 (약 4초 소요)
-  { delay: 5500, text: '서류는 뭐가 필요한가요?' },
-  { delay: 8500, text: '왜 이렇게 복잡해요? 담당자 바꿔요!' },
-  { delay: 11500, text: '야, 이따위로 일할 거야? 당장 책임자 나오라고!' },
-  { delay: 14500, text: '미치겠네 진짜, 가만 안 둬!' },
-  { delay: 18000, text: '이의신청 서류 제출 기한이 언제까지예요?' },
-];
-
-let demoRunning = false;
-let demoTimeouts = [];
-
-function runDemo() {
-  if (demoRunning) {
-    demoTimeouts.forEach(clearTimeout);
-    demoTimeouts = [];
-    demoRunning = false;
-    $('demo-btn').textContent = '▶ 데모 실행';
-    return;
-  }
-
-  demoRunning = true;
-  $('demo-btn').textContent = '■ 데모 중지';
-  if (!isCallActive) startCall();
-
-  DEMO_SCRIPT.forEach(({ delay, text }) => {
-    const tid = setTimeout(() => processUtterance(text), delay);
-    demoTimeouts.push(tid);
-  });
-
-  const total = DEMO_SCRIPT[DEMO_SCRIPT.length - 1].delay + 5000;
-  const tid = setTimeout(() => {
-    demoRunning = false;
-    $('demo-btn').textContent = '▶ 데모 실행';
-  }, total);
-  demoTimeouts.push(tid);
 }
 
 // ── 헬퍼 ─────────────────────────────────────────────────────────────────
