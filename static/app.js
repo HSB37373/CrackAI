@@ -270,6 +270,8 @@ function startCall() {
   SESSION_ID = 'sess_' + Date.now(); // 통화마다 새 세션 — 욕설 카운터 누적 방지
   clearChatArea();
   resetStats();
+  // 새 세션에 민원인 임계치 재등록 (통화 시작 전 조회한 경우 대비)
+  if ($('caller-phone-input')?.value.trim()) registerCaller();
   resetRoutingBrief();
 
   micBtn.classList.add('active');
