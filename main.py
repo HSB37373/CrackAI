@@ -153,7 +153,10 @@ async def register_caller(req: CallerRegisterRequest):
     recent_count = cr.get_recent_offense_count(req.phone)
     threshold = cr.get_threshold(req.phone)
 
-    session["ai_threshold"] = threshold
+    # 통화 중 재조회 시 이번 통화의 기준치가 바뀌지 않도록
+    # AI 전환 전(= 통화 시작 시점)에만 session 임계치를 설정한다.
+    if not session.get("ai_activated"):
+        session["ai_threshold"] = threshold
     session["caller_offense_count"] = recent_count
 
     # AI 전환 상태이고 아직 전과 미기록이면 자동 저장
@@ -164,6 +167,7 @@ async def register_caller(req: CallerRegisterRequest):
         )
         session["offense_recorded"] = True
         recent_count = cr.get_recent_offense_count(req.phone)
+        threshold = cr.get_threshold(req.phone)
 
     caller = cr.get_caller(req.phone)
     return {

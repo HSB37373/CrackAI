@@ -208,6 +208,10 @@ async function registerCaller() {
       badge.textContent = `🚨 악성민원 이력 ${count}회 이상 · 욕설 즉시 AI 전환`;
     }
 
+    // 카운터 기준치 즉시 반영
+    const wth = $('warning-threshold');
+    if (wth) wth.textContent = data.ai_threshold || 3;
+
     // 통화 제한 상태 표시
     if (data.ban_status && data.ban_status.is_banned) {
       startBanCountdown(data.ban_status.remaining_seconds);
